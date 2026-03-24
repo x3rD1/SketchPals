@@ -1,4 +1,4 @@
-import type { PenDeps, EraserDeps, Point, PanDeps } from "./types";
+import type { PenDeps, EraserDeps, Point, PanDeps, SelectDeps } from "./types";
 
 export const penTool = ({
   redraw,
@@ -98,5 +98,71 @@ export const panTool = ({
   },
   onMouseUp() {
     isPanning.current = false;
+  },
+});
+
+export const selectTool = ({
+  isDragging,
+  dragStart,
+  selectedIndexRef,
+  setHoveredIndex,
+  setSelectedStrokeIndex,
+  findStrokeIndex,
+  setState,
+}: SelectDeps) => ({
+  onMouseDown(point: Point) {
+    const index = findStrokeIndex(point);
+    selectedIndexRef.current = index;
+
+    setSelectedStrokeIndex(index);
+
+    if (selectedIndexRef.current !== null) {
+      isDragging.current = true;
+      dragStart.current = point;
+    }
+  },
+  onMouseMove(point: Point) {
+    const index = findStrokeIndex(point);
+
+    if (!isDragging.current) {
+      setHoveredIndex(index);
+    }
+
+    if (!isDragging.current || dragStart.current === null) return;
+
+    const dx = point.x - dragStart.current.x;
+    const dy = point.y - dragStart.current.y;
+
+    dragStart.current = point;
+
+    setState((prev) => {
+      const currentIndex = prev.index;
+      const newHistory = prev.history.slice(0, currentIndex + 1);
+
+      const currentState = newHistory[newHistory.length - 1];
+
+      const updatedState = currentState.map((stroke, i) => {
+        if (i !== selectedIndexRef.current) return stroke;
+
+        return {
+          ...stroke,
+          points: stroke.points.map((p) => ({
+            x: p.x + dx,
+            y: p.y + dy,
+          })),
+        };
+      });
+
+      newHistory[newHistory.length - 1] = updatedState;
+
+      return {
+        history: newHistory,
+        index: currentIndex,
+      };
+    });
+  },
+  onMouseUp() {
+    isDragging.current = false;
+    dragStart.current = null;
   },
 });
