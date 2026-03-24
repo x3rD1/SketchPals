@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import type { Tool, Point, Stroke, State, Viewport } from "./types";
-import { penTool, eraserTool, panTool } from "./tools";
+import { penTool, eraserTool, panTool, selectTool } from "./tools";
 
 const HIT_TOLERANCE = 2;
 
@@ -13,6 +13,9 @@ function Canvas() {
   });
   const [tool, setTool] = useState<Tool>("pen");
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [selectedStrokeIndex, setSelectedStrokeIndex] = useState<number | null>(
+    null,
+  );
   const [color, setColor] = useState("#000000");
   const [width, setWidth] = useState(5);
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
@@ -21,6 +24,9 @@ function Canvas() {
   const currentStroke = useRef<Stroke | null>(null);
   const isDrawing = useRef(false);
   const isPanning = useRef(false);
+  const isDragging = useRef(false);
+  const dragStart = useRef<Point | null>(null);
+  const selectedIndexRef = useRef<number | null>(null);
   const initialMousePosition = useRef<Point>(null);
 
   // Current canvas state
@@ -96,7 +102,10 @@ function Canvas() {
     allStrokes.forEach((stroke, i) => {
       ctx.beginPath();
 
-      if (i === hoveredIndex) {
+      // Update color on hover/select
+      if (i === selectedStrokeIndex) {
+        ctx.strokeStyle = "blue";
+      } else if (i === hoveredIndex) {
         ctx.strokeStyle = "gray";
       } else {
         ctx.strokeStyle = stroke.color;
@@ -198,7 +207,7 @@ function Canvas() {
         const p2 = points[j + 1];
 
         if (isPointNearSegment(p1, p2, mouse, radius)) {
-          console.log("A stroke has been hovered");
+          // console.log("A stroke has been hovered", i);
           return i;
         }
       }
@@ -215,6 +224,15 @@ function Canvas() {
       handleErase,
     }),
     pan: panTool({ isPanning, viewport, setViewport, initialMousePosition }),
+    select: selectTool({
+      isDragging,
+      dragStart,
+      selectedIndexRef,
+      setHoveredIndex,
+      setSelectedStrokeIndex,
+      findStrokeIndex,
+      setState,
+    }),
   };
 
   // Stating the canvas
@@ -227,8 +245,7 @@ function Canvas() {
 
   useEffect(() => {
     redraw();
-    console.log("redrawing");
-  }, [strokes, hoveredIndex, viewport]);
+  }, [strokes, hoveredIndex, viewport, selectedStrokeIndex]);
 
   useEffect(() => {
     viewportRef.current = viewport;
@@ -318,6 +335,7 @@ function Canvas() {
         onChange={(e) => setWidth(Number(e.target.value))}
       />
       <button onClick={() => setTool("pan")}>Pan</button>
+      <button onClick={() => setTool("select")}>Select</button>
     </>
   );
 }
