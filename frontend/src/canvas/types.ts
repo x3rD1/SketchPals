@@ -16,7 +16,17 @@ export type State = {
   index: number;
 };
 
-export type Tool = "pen" | "eraser" | "pan";
+export type Tool = "pen" | "eraser" | "pan" | "select";
+
+export type SelectDeps = {
+  isDragging: React.RefObject<boolean>;
+  dragStart: React.RefObject<Point | null>;
+  selectedIndexRef: React.RefObject<number | null>;
+  setSelectedStrokeIndex: React.Dispatch<React.SetStateAction<number | null>>;
+  setHoveredIndex: React.Dispatch<React.SetStateAction<number | null>>;
+  findStrokeIndex: (mouse: Point) => number;
+  setState: React.Dispatch<React.SetStateAction<State>>;
+};
 
 export type PanDeps = {
   isPanning: React.RefObject<boolean>;
