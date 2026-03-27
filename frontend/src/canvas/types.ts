@@ -25,7 +25,9 @@ export type SelectDeps = {
   setSelectedStrokeIndex: React.Dispatch<React.SetStateAction<number | null>>;
   setHoveredIndex: React.Dispatch<React.SetStateAction<number | null>>;
   findStrokeIndex: (mouse: Point) => number;
+  state: State;
   setState: React.Dispatch<React.SetStateAction<State>>;
+  initialStateRef: React.RefObject<CanvasState | null>;
 };
 
 export type PanDeps = {

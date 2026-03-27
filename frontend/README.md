@@ -10,12 +10,13 @@
 
 ## Development Timeline
 
-1. Basic drawing
-2. Undo/redo system
-3. Eraser with hit detection
-4. Tool system refactor
-5. Viewport (pan + zoom)
-6. Zoom-to-cursor implementation
+1. Implemented basic freehand drawing with canvas
+2. Designed undo/redo system using a history stack
+3. Built eraser tool with segment-based hit detection
+4. Refactored into a modular tool system (pen, eraser, pan, select)
+5. Added viewport system (pan + zoom with scale + offsets)
+6. Implemented zoom-to-cursor for intuitive navigation
+7. Developed selection tool with real-time drag interactions
 
 ## Key Concepts
 
