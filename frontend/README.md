@@ -17,6 +17,7 @@
 5. Added viewport system (pan + zoom with scale + offsets)
 6. Implemented zoom-to-cursor for intuitive navigation
 7. Developed selection tool with real-time drag interactions
+8. Optimized history system to separate preview vs committed state during drag
 
 ## Key Concepts
 
