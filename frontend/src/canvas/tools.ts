@@ -108,42 +108,48 @@ export const selectTool = ({
   setHoveredIndex,
   setSelectedStrokeIndex,
   findStrokeIndex,
+  state,
   setState,
+  initialStateRef,
 }: SelectDeps) => ({
   onMouseDown(point: Point) {
     const index = findStrokeIndex(point);
     selectedIndexRef.current = index;
 
-    setSelectedStrokeIndex(index);
+    setSelectedStrokeIndex(index); // Change stroke color to blue implying that a stroke is selected
 
-    if (selectedIndexRef.current !== null) {
+    if (selectedIndexRef.current !== null && selectedIndexRef.current !== -1) {
       isDragging.current = true;
       dragStart.current = point;
+      initialStateRef.current = state.history[state.index];
     }
   },
   onMouseMove(point: Point) {
     const index = findStrokeIndex(point);
 
     if (!isDragging.current) {
-      setHoveredIndex(index);
+      setHoveredIndex(index); // Highlight a stroke if dragging is false
     }
 
     if (!isDragging.current || dragStart.current === null) return;
 
+    // Calculate distance between dragStart and mouse position in world coords
     const dx = point.x - dragStart.current.x;
     const dy = point.y - dragStart.current.y;
 
-    dragStart.current = point;
-
+    // Preview
+    // Update latest state by moving each state's stroke's points by dx,dy as preview
     setState((prev) => {
       const currentIndex = prev.index;
-      const newHistory = prev.history.slice(0, currentIndex + 1);
+      const history = [...prev.history]; // Create a shallow copy of prev.history
 
-      const currentState = newHistory[newHistory.length - 1];
+      const base = initialStateRef.current; // Use the stable original state
+      if (base === null) return prev;
 
-      const updatedState = currentState.map((stroke, i) => {
-        if (i !== selectedIndexRef.current) return stroke;
+      const updatedState = base.map((stroke, i) => {
+        if (i !== selectedIndexRef.current) return stroke; // Keep untouched stroke unmoved
 
+        // Move selected stroke by dx,dy
         return {
           ...stroke,
           points: stroke.points.map((p) => ({
@@ -153,15 +159,38 @@ export const selectTool = ({
         };
       });
 
-      newHistory[newHistory.length - 1] = updatedState;
+      history[currentIndex] = updatedState; // Mutate the history's current state
 
       return {
-        history: newHistory,
+        history,
         index: currentIndex,
       };
     });
   },
   onMouseUp() {
+    if (!isDragging.current) return;
+
+    setState((prev) => {
+      const currentIndex = prev.index;
+      const newHistory = prev.history.slice(0, currentIndex + 1); // Create new array from prev.index up until currentIndex
+
+      const originalState = initialStateRef.current;
+      if (originalState === null) return prev;
+
+      const finalState = newHistory[currentIndex]; // current preview
+
+      // restore original
+      newHistory[currentIndex] = originalState;
+
+      // push final
+      newHistory.push(finalState);
+
+      return {
+        history: newHistory,
+        index: currentIndex + 1,
+      };
+    });
+
     isDragging.current = false;
     dragStart.current = null;
   },
