@@ -245,6 +245,11 @@ function Canvas() {
     }),
   };
 
+  const handleToolSelection = (tool: Tool) => {
+    if (tool !== "select") setSelectedStrokeIndex(null);
+
+    setTool(tool);
+  };
   // Stating the canvas
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -330,8 +335,8 @@ function Canvas() {
       >
         Redo
       </button>
-      <button onClick={() => setTool("pen")}>Pencil</button>
-      <button onClick={() => setTool("eraser")}>Eraser</button>
+      <button onClick={() => handleToolSelection("pen")}>Pencil</button>
+      <button onClick={() => handleToolSelection("eraser")}>Eraser</button>
       <input
         type="color"
         value={color}
@@ -344,8 +349,8 @@ function Canvas() {
         max={20}
         onChange={(e) => setWidth(Number(e.target.value))}
       />
-      <button onClick={() => setTool("pan")}>Pan</button>
-      <button onClick={() => setTool("select")}>Select</button>
+      <button onClick={() => handleToolSelection("pan")}>Pan</button>
+      <button onClick={() => handleToolSelection("select")}>Select</button>
     </>
   );
 }
