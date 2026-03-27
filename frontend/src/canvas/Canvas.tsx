@@ -1,11 +1,19 @@
 import React, { useEffect, useRef, useState } from "react";
-import type { Tool, Point, Stroke, State, Viewport } from "./types";
+import type {
+  Tool,
+  Point,
+  Stroke,
+  State,
+  Viewport,
+  CanvasState,
+} from "./types";
 import { penTool, eraserTool, panTool, selectTool } from "./tools";
 
 const HIT_TOLERANCE = 2;
 
 function Canvas() {
   const [state, setState] = useState<State>({ history: [[]], index: 0 });
+  const initialStateRef = useRef<CanvasState | null>(null);
   const [viewport, setViewport] = useState<Viewport>({
     offsetX: 0,
     offsetY: 0,
@@ -231,7 +239,9 @@ function Canvas() {
       setHoveredIndex,
       setSelectedStrokeIndex,
       findStrokeIndex,
+      state,
       setState,
+      initialStateRef,
     }),
   };
 
