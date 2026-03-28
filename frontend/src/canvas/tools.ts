@@ -1,4 +1,5 @@
 import type { PenDeps, EraserDeps, Point, PanDeps, SelectDeps } from "./types";
+import { didMove } from "./utils";
 
 export const penTool = ({
   redraw,
@@ -178,6 +179,8 @@ export const selectTool = ({
       if (originalState === null) return prev;
 
       const finalState = newHistory[currentIndex]; // current preview
+
+      if (!didMove(originalState, finalState, selectedIndexRef)) return prev;
 
       // restore original
       newHistory[currentIndex] = originalState;
