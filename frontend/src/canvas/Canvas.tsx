@@ -110,15 +110,6 @@ function Canvas() {
     allStrokes.forEach((stroke, i) => {
       ctx.beginPath();
 
-      // Update color on hover/select
-      if (i === selectedStrokeIndex) {
-        ctx.strokeStyle = "blue";
-      } else if (i === hoveredIndex) {
-        ctx.strokeStyle = "gray";
-      } else {
-        ctx.strokeStyle = stroke.color;
-      }
-
       stroke.points.forEach((point, index) => {
         if (index === 0) {
           ctx.moveTo(point.x, point.y);
@@ -126,10 +117,33 @@ function Canvas() {
           ctx.lineTo(point.x, point.y);
         }
       });
+
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
-      ctx.lineWidth = stroke.width;
-      ctx.stroke();
+
+      // Update color on hover/select
+      if (i === selectedStrokeIndex) {
+        // Stroke's outline on select
+        ctx.shadowColor = "rgb(0, 64, 255)";
+        ctx.shadowBlur = 8;
+        ctx.strokeStyle = stroke.color;
+        ctx.lineWidth = stroke.width;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        // Stroke's properties
+        ctx.lineWidth = stroke.width;
+        ctx.strokeStyle = "black";
+        ctx.stroke();
+      } else if (i === hoveredIndex) {
+        ctx.lineWidth = stroke.width;
+        ctx.strokeStyle = "gray";
+        ctx.stroke();
+      } else {
+        ctx.lineWidth = stroke.width;
+        ctx.strokeStyle = stroke.color;
+        ctx.stroke();
+      }
     });
   };
 
@@ -245,11 +259,6 @@ function Canvas() {
     }),
   };
 
-  const handleToolSelection = (tool: Tool) => {
-    if (tool !== "select") setSelectedStrokeIndex(null);
-
-    setTool(tool);
-  };
   // Stating the canvas
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -335,8 +344,8 @@ function Canvas() {
       >
         Redo
       </button>
-      <button onClick={() => handleToolSelection("pen")}>Pencil</button>
-      <button onClick={() => handleToolSelection("eraser")}>Eraser</button>
+      <button onClick={() => setTool("pen")}>Pencil</button>
+      <button onClick={() => setTool("eraser")}>Eraser</button>
       <input
         type="color"
         value={color}
@@ -349,8 +358,8 @@ function Canvas() {
         max={20}
         onChange={(e) => setWidth(Number(e.target.value))}
       />
-      <button onClick={() => handleToolSelection("pan")}>Pan</button>
-      <button onClick={() => handleToolSelection("select")}>Select</button>
+      <button onClick={() => setTool("pan")}>Pan</button>
+      <button onClick={() => setTool("select")}>Select</button>
     </>
   );
 }
