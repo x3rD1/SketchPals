@@ -20,6 +20,7 @@ function Canvas() {
     scale: 1,
   });
   const [tool, setTool] = useState<Tool>("pen");
+  const [cursorStyle, setCursorStyle] = useState("default");
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [selectedStrokeIndex, setSelectedStrokeIndex] = useState<number | null>(
     null,
@@ -256,7 +257,28 @@ function Canvas() {
       state,
       setState,
       initialStateRef,
+      setCursorStyle,
     }),
+  };
+
+  const selectionTool = {
+    pen: () => {
+      setCursorStyle("crosshair");
+    },
+    eraser: () => {
+      setCursorStyle("cell");
+    },
+    pan: () => {
+      setCursorStyle("grab");
+    },
+    select: () => {
+      setCursorStyle("pointer");
+    },
+  };
+  const handleToolSelection = (tool: Tool) => {
+    if (tool !== "select") setSelectedStrokeIndex(null);
+
+    selectionTool[tool]();
   };
 
   // Stating the canvas
@@ -323,10 +345,15 @@ function Canvas() {
     };
   }, []);
 
+  // Change cursor style on tool change
+  useEffect(() => {
+    handleToolSelection(tool);
+  }, [tool]);
+
   return (
     <>
       <canvas
-        style={{ border: "1px solid red" }}
+        style={{ border: "1px solid red", cursor: cursorStyle }}
         width={500}
         height={500}
         ref={canvasRef}

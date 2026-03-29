@@ -28,6 +28,7 @@ export type SelectDeps = {
   state: State;
   setState: React.Dispatch<React.SetStateAction<State>>;
   initialStateRef: React.RefObject<CanvasState | null>;
+  setCursorStyle: React.Dispatch<React.SetStateAction<string>>;
 };
 
 export type PanDeps = {

@@ -112,6 +112,7 @@ export const selectTool = ({
   state,
   setState,
   initialStateRef,
+  setCursorStyle,
 }: SelectDeps) => ({
   onMouseDown(point: Point) {
     const index = findStrokeIndex(point);
@@ -123,6 +124,8 @@ export const selectTool = ({
       isDragging.current = true;
       dragStart.current = point;
       initialStateRef.current = state.history[state.index];
+    } else {
+      setCursorStyle("pointer");
     }
   },
   onMouseMove(point: Point) {
@@ -133,6 +136,8 @@ export const selectTool = ({
     }
 
     if (!isDragging.current || dragStart.current === null) return;
+
+    setCursorStyle("grabbing");
 
     // Calculate distance between dragStart and mouse position in world coords
     const dx = point.x - dragStart.current.x;
@@ -170,6 +175,8 @@ export const selectTool = ({
   },
   onMouseUp() {
     if (!isDragging.current) return;
+
+    setCursorStyle("grab");
 
     setState((prev) => {
       const currentIndex = prev.index;
