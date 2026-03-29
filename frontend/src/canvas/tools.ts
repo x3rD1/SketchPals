@@ -120,7 +120,7 @@ export const selectTool = ({
 
     setSelectedStrokeIndex(index); // Change stroke color to blue implying that a stroke is selected
 
-    if (selectedIndexRef.current !== null && selectedIndexRef.current !== -1) {
+    if (selectedIndexRef.current !== null) {
       isDragging.current = true;
       dragStart.current = point;
       initialStateRef.current = state.history[state.index];

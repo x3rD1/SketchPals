@@ -218,7 +218,7 @@ function Canvas() {
 
   const findStrokeIndex = (mouse: Point) => {
     const currentState = state.history[state.index];
-    if (!currentState) return -1;
+    if (!currentState) return null;
     // Loop over current strokes
     for (let i = strokes.length - 1; i >= 0; i--) {
       const stroke = strokes[i];
@@ -236,7 +236,7 @@ function Canvas() {
         }
       }
     }
-    return -1;
+    return null;
   };
 
   // This gets recreated every render: needs a fix later
@@ -355,7 +355,7 @@ function Canvas() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Backspace" || e.key === "Delete") {
         const selectedIndex = selectedIndexRef.current;
-        if (selectedIndex === null || selectedIndex === -1) return;
+        if (selectedIndex === null) return;
 
         e.preventDefault();
 
@@ -370,6 +370,7 @@ function Canvas() {
 
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
+
   return (
     <>
       <canvas

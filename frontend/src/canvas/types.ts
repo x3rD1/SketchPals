@@ -24,7 +24,7 @@ export type SelectDeps = {
   selectedIndexRef: React.RefObject<number | null>;
   setSelectedStrokeIndex: React.Dispatch<React.SetStateAction<number | null>>;
   setHoveredIndex: React.Dispatch<React.SetStateAction<number | null>>;
-  findStrokeIndex: (mouse: Point) => number;
+  findStrokeIndex: (mouse: Point) => number | null;
   state: State;
   setState: React.Dispatch<React.SetStateAction<State>>;
   initialStateRef: React.RefObject<CanvasState | null>;
@@ -48,7 +48,7 @@ export type PenDeps = {
 };
 
 export type EraserDeps = {
-  findStrokeIndex: (mouse: Point) => number;
+  findStrokeIndex: (mouse: Point) => number | null;
   setHoveredIndex: React.Dispatch<React.SetStateAction<number | null>>;
   handleErase: (point: Point) => void;
 };
