@@ -18,6 +18,8 @@
 6. Implemented zoom-to-cursor for intuitive navigation
 7. Developed selection tool with real-time drag interactions
 8. Optimized history system to separate preview vs committed state during drag
+9. Extracted reusable utility functions (movement detection, deleteSelectedStroke)
+10. Implemented keyboard shortcuts for faster interactions (Delete / Backspace support)
 
 ## Key Concepts
 
