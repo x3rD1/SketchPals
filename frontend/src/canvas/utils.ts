@@ -1,4 +1,4 @@
-import type { CanvasState } from "./types";
+import type { CanvasState, State } from "./types";
 
 export const didMove = (
   originalState: CanvasState,
@@ -18,5 +18,25 @@ export const didMove = (
   return originalStrokePoints.some((point, i) => {
     const otherPoint = finalStrokePoints[i];
     return point.x !== otherPoint.x || point.y !== otherPoint.y;
+  });
+};
+
+export const deleteSelectedStroke = (
+  setState: React.Dispatch<React.SetStateAction<State>>,
+  selectedIndex: number | null,
+) => {
+  setState((prev) => {
+    const currentIndex = prev.index;
+    const newHistory = prev.history.slice(0, currentIndex + 1);
+    const currentState = newHistory[currentIndex];
+
+    const updatedState = currentState.filter((_, i) => i !== selectedIndex);
+
+    newHistory.push(updatedState);
+
+    return {
+      history: newHistory,
+      index: prev.index + 1,
+    };
   });
 };

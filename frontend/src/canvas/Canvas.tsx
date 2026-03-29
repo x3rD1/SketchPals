@@ -8,6 +8,7 @@ import type {
   CanvasState,
 } from "./types";
 import { penTool, eraserTool, panTool, selectTool } from "./tools";
+import { deleteSelectedStroke } from "./utils";
 
 const HIT_TOLERANCE = 2;
 
@@ -350,6 +351,25 @@ function Canvas() {
     handleToolSelection(tool);
   }, [tool]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Backspace" || e.key === "Delete") {
+        const selectedIndex = selectedIndexRef.current;
+        if (selectedIndex === null || selectedIndex === -1) return;
+
+        e.preventDefault();
+
+        deleteSelectedStroke(setState, selectedIndex);
+        setSelectedStrokeIndex(null);
+        setHoveredIndex(null);
+        setCursorStyle("pointer");
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
   return (
     <>
       <canvas
