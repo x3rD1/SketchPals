@@ -83,6 +83,19 @@ function Canvas() {
     tools[tool].onMouseMove(point, { isDrawing: e.buttons === 1 });
   };
 
+  const handleMouseUp = (e: React.MouseEvent) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const point = getMousePos(e, canvas);
+
+    tools[tool].onMouseUp(point);
+  };
+
+  const handleMouseLeave = () => {
+    isDrawing.current = false;
+  };
+
   const redraw = () => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
@@ -380,8 +393,8 @@ function Canvas() {
         ref={canvasRef}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
-        onMouseUp={tools[tool].onMouseUp}
-        onMouseLeave={tools[tool].onMouseUp}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
       />
       <button onClick={handleUndo} disabled={state.index === 0}>
         Undo
