@@ -113,6 +113,10 @@ export const selectTool = ({
   setState,
   initialStateRef,
   setCursorStyle,
+  startPointRef,
+  endPointRef,
+  isSelectingBox,
+  redraw,
 }: SelectDeps) => ({
   onMouseDown(point: Point) {
     const index = findStrokeIndex(point);
@@ -125,7 +129,12 @@ export const selectTool = ({
       dragStart.current = point;
       initialStateRef.current = state.history[state.index];
     } else {
+      isSelectingBox.current = true;
       setCursorStyle("pointer");
+    }
+
+    if (isSelectingBox.current) {
+      startPointRef.current = point;
     }
   },
   onMouseMove(point: Point) {
@@ -133,6 +142,11 @@ export const selectTool = ({
 
     if (!isDragging.current) {
       setHoveredIndex(index); // Highlight a stroke if dragging is false
+    }
+
+    if (isSelectingBox.current) {
+      endPointRef.current = point;
+      redraw();
     }
 
     if (!isDragging.current || dragStart.current === null) return;
@@ -173,7 +187,13 @@ export const selectTool = ({
       };
     });
   },
-  onMouseUp() {
+  onMouseUp(point: Point) {
+    if (isSelectingBox.current) {
+      startPointRef.current = null;
+      endPointRef.current = null;
+      redraw();
+    }
+
     if (!isDragging.current) return;
 
     setCursorStyle("grab");
@@ -203,5 +223,6 @@ export const selectTool = ({
 
     isDragging.current = false;
     dragStart.current = null;
+    isSelectingBox.current = false;
   },
 });

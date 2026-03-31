@@ -38,6 +38,9 @@ function Canvas() {
   const dragStart = useRef<Point | null>(null);
   const selectedIndexRef = useRef<number | null>(null);
   const initialMousePosition = useRef<Point>(null);
+  const startPointRef = useRef<Point>(null);
+  const endPointRef = useRef<Point>(null);
+  const isSelectingBox = useRef(false);
 
   // Current canvas state
   const strokes = state.history[state.index] || [];
@@ -160,6 +163,27 @@ function Canvas() {
         ctx.stroke();
       }
     });
+
+    if (startPointRef.current !== null && endPointRef.current !== null) {
+      const { x: startX, y: startY } = startPointRef.current;
+      const { x: endX, y: endY } = endPointRef.current;
+
+      const left = Math.min(startX, endX);
+      const right = Math.max(startX, endX);
+      const top = Math.min(startY, endY);
+      const bottom = Math.max(startY, endY);
+      const width = right - left;
+      const height = bottom - top;
+
+      // Draw filled rect with color
+      ctx.fillStyle = "rgba(0, 0, 255, 0.2)";
+      ctx.fillRect(left, top, width, height);
+
+      // Add outline border
+      ctx.strokeStyle = "rgba(0, 0, 150)";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(left, top, width, height);
+    }
   };
 
   const handleUndo = () => {
@@ -272,6 +296,10 @@ function Canvas() {
       setState,
       initialStateRef,
       setCursorStyle,
+      startPointRef,
+      endPointRef,
+      isSelectingBox,
+      redraw,
     }),
   };
 

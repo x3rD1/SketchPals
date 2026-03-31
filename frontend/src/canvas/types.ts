@@ -29,6 +29,10 @@ export type SelectDeps = {
   setState: React.Dispatch<React.SetStateAction<State>>;
   initialStateRef: React.RefObject<CanvasState | null>;
   setCursorStyle: React.Dispatch<React.SetStateAction<string>>;
+  startPointRef: React.RefObject<Point | null>;
+  endPointRef: React.RefObject<Point | null>;
+  isSelectingBox: React.RefObject<boolean>;
+  redraw: () => void;
 };
 
 export type PanDeps = {
