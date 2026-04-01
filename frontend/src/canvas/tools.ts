@@ -1,5 +1,19 @@
-import type { PenDeps, EraserDeps, Point, PanDeps, SelectDeps } from "./types";
-import { didMove, getSelectionBounds, getStrokesInsideBox } from "./utils";
+import { resetSelectionBox } from "./selectionHelpers";
+import type {
+  PenDeps,
+  EraserDeps,
+  Point,
+  PanDeps,
+  SelectDeps,
+  State,
+  CanvasState,
+} from "./types";
+import {
+  didMove,
+  didMoveEnough,
+  getSelectionBounds,
+  getStrokesInsideBox,
+} from "./utils";
 
 export const penTool = ({
   redraw,
@@ -102,6 +116,94 @@ export const panTool = ({
   },
 });
 
+const handleSelectionBoxMouseUp = ({
+  isSelectingBox,
+  startPointRef,
+  endPointRef,
+  redraw,
+  state,
+  setSelectedStrokeIndexes,
+}: {
+  isSelectingBox: React.RefObject<boolean>;
+  startPointRef: React.RefObject<Point | null>;
+  endPointRef: React.RefObject<Point | null>;
+  redraw: () => void;
+  state: State;
+  setSelectedStrokeIndexes: React.Dispatch<React.SetStateAction<Set<number>>>;
+}) => {
+  if (!isSelectingBox.current) return;
+
+  if (startPointRef.current === null || endPointRef.current === null) {
+    resetSelectionBox({ startPointRef, endPointRef, isSelectingBox });
+    return;
+  }
+
+  const start = startPointRef.current;
+  const end = endPointRef.current;
+
+  if (!didMoveEnough(start, end)) {
+    resetSelectionBox({ startPointRef, endPointRef, isSelectingBox });
+    redraw();
+    return;
+  }
+
+  const bounds = getSelectionBounds(start, end);
+  const strokes = state.history[state.index];
+  const selected = getStrokesInsideBox(strokes, bounds);
+
+  setSelectedStrokeIndexes(selected);
+
+  resetSelectionBox({ startPointRef, endPointRef, isSelectingBox });
+
+  redraw();
+};
+
+const handleDragMouseUp = ({
+  isDragging,
+  dragStart,
+  initialStateRef,
+  selectedIndexRef,
+  setCursorStyle,
+  setState,
+}: {
+  isDragging: React.RefObject<boolean>;
+  dragStart: React.RefObject<Point | null>;
+  initialStateRef: React.RefObject<CanvasState | null>;
+  selectedIndexRef: React.RefObject<number | null>;
+  setCursorStyle: React.Dispatch<React.SetStateAction<string>>;
+  setState: React.Dispatch<React.SetStateAction<State>>;
+}) => {
+  if (!isDragging.current) return;
+
+  setCursorStyle("grab");
+
+  setState((prev) => {
+    const currentIndex = prev.index;
+    const newHistory = prev.history.slice(0, currentIndex + 1); // Create new array from prev.index up until currentIndex
+
+    const originalState = initialStateRef.current;
+    if (originalState === null) return prev;
+
+    const finalState = newHistory[currentIndex]; // current preview
+
+    if (!didMove(originalState, finalState, selectedIndexRef)) return prev;
+
+    // restore original
+    newHistory[currentIndex] = originalState;
+
+    // push final
+    newHistory.push(finalState);
+
+    return {
+      history: newHistory,
+      index: currentIndex + 1,
+    };
+  });
+
+  isDragging.current = false;
+  dragStart.current = null;
+};
+
 export const selectTool = ({
   isDragging,
   dragStart,
@@ -189,70 +291,25 @@ export const selectTool = ({
   },
   onMouseUp(point: Point) {
     if (isSelectingBox.current) {
-      if (startPointRef.current === null || endPointRef.current === null) {
-        startPointRef.current = null;
-        endPointRef.current = null;
-        isSelectingBox.current = false;
-        return;
-      }
-
-      const start = startPointRef.current;
-      const end = endPointRef.current;
-
-      const dx = end.x - start.x;
-      const dy = end.y - start.y;
-
-      const threshold = 5;
-
-      if (Math.abs(dx) < threshold && Math.abs(dy) < threshold) {
-        startPointRef.current = null;
-        endPointRef.current = null;
-        isSelectingBox.current = false;
-        redraw();
-        return;
-      }
-
-      const bounds = getSelectionBounds(start, end);
-      const strokes = state.history[state.index];
-      const selected = getStrokesInsideBox(strokes, bounds);
-
-      setSelectedStrokeIndexes(selected);
-
-      startPointRef.current = null;
-      endPointRef.current = null;
-      isSelectingBox.current = false;
-      redraw();
+      handleSelectionBoxMouseUp({
+        isSelectingBox,
+        startPointRef,
+        endPointRef,
+        redraw,
+        state,
+        setSelectedStrokeIndexes,
+      });
     }
 
-    if (!isDragging.current) return;
-
-    setCursorStyle("grab");
-
-    setState((prev) => {
-      const currentIndex = prev.index;
-      const newHistory = prev.history.slice(0, currentIndex + 1); // Create new array from prev.index up until currentIndex
-
-      const originalState = initialStateRef.current;
-      if (originalState === null) return prev;
-
-      const finalState = newHistory[currentIndex]; // current preview
-
-      if (!didMove(originalState, finalState, selectedIndexRef)) return prev;
-
-      // restore original
-      newHistory[currentIndex] = originalState;
-
-      // push final
-      newHistory.push(finalState);
-
-      return {
-        history: newHistory,
-        index: currentIndex + 1,
-      };
-    });
-
-    isDragging.current = false;
-    dragStart.current = null;
-    isSelectingBox.current = false;
+    if (isDragging.current) {
+      handleDragMouseUp({
+        isDragging,
+        dragStart,
+        initialStateRef,
+        selectedIndexRef,
+        setCursorStyle,
+        setState,
+      });
+    }
   },
 });

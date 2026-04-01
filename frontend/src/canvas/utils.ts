@@ -78,3 +78,12 @@ export const getStrokesInsideBox = (
 
   return selected;
 };
+
+export const didMoveEnough = (start: Point, end: Point) => {
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
+
+  const threshold = 5;
+
+  return Math.abs(dx) > threshold || Math.abs(dy) > threshold;
+};
