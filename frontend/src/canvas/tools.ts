@@ -1,5 +1,5 @@
 import type { PenDeps, EraserDeps, Point, PanDeps, SelectDeps } from "./types";
-import { didMove } from "./utils";
+import { didMove, getSelectionBounds, getStrokesInsideBox } from "./utils";
 
 export const penTool = ({
   redraw,
@@ -107,7 +107,7 @@ export const selectTool = ({
   dragStart,
   selectedIndexRef,
   setHoveredIndex,
-  setSelectedStrokeIndex,
+  setSelectedStrokeIndexes,
   findStrokeIndex,
   state,
   setState,
@@ -122,19 +122,19 @@ export const selectTool = ({
     const index = findStrokeIndex(point);
     selectedIndexRef.current = index;
 
-    setSelectedStrokeIndex(index); // Change stroke color to blue implying that a stroke is selected
-
     if (selectedIndexRef.current !== null) {
+      isSelectingBox.current = false;
       isDragging.current = true;
       dragStart.current = point;
       initialStateRef.current = state.history[state.index];
+      setSelectedStrokeIndexes(new Set([selectedIndexRef.current]));
     } else {
+      isDragging.current = false;
+      dragStart.current = null;
       isSelectingBox.current = true;
-      setCursorStyle("pointer");
-    }
-
-    if (isSelectingBox.current) {
       startPointRef.current = point;
+      setCursorStyle("pointer");
+      setSelectedStrokeIndexes(new Set());
     }
   },
   onMouseMove(point: Point) {
@@ -189,8 +189,38 @@ export const selectTool = ({
   },
   onMouseUp(point: Point) {
     if (isSelectingBox.current) {
+      if (startPointRef.current === null || endPointRef.current === null) {
+        startPointRef.current = null;
+        endPointRef.current = null;
+        isSelectingBox.current = false;
+        return;
+      }
+
+      const start = startPointRef.current;
+      const end = endPointRef.current;
+
+      const dx = end.x - start.x;
+      const dy = end.y - start.y;
+
+      const threshold = 5;
+
+      if (Math.abs(dx) < threshold && Math.abs(dy) < threshold) {
+        startPointRef.current = null;
+        endPointRef.current = null;
+        isSelectingBox.current = false;
+        redraw();
+        return;
+      }
+
+      const bounds = getSelectionBounds(start, end);
+      const strokes = state.history[state.index];
+      const selected = getStrokesInsideBox(strokes, bounds);
+
+      setSelectedStrokeIndexes(selected);
+
       startPointRef.current = null;
       endPointRef.current = null;
+      isSelectingBox.current = false;
       redraw();
     }
 

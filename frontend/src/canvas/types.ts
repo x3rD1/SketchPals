@@ -22,7 +22,7 @@ export type SelectDeps = {
   isDragging: React.RefObject<boolean>;
   dragStart: React.RefObject<Point | null>;
   selectedIndexRef: React.RefObject<number | null>;
-  setSelectedStrokeIndex: React.Dispatch<React.SetStateAction<number | null>>;
+  setSelectedStrokeIndexes: React.Dispatch<React.SetStateAction<Set<number>>>;
   setHoveredIndex: React.Dispatch<React.SetStateAction<number | null>>;
   findStrokeIndex: (mouse: Point) => number | null;
   state: State;

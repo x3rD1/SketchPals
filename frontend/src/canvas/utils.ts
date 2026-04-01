@@ -1,4 +1,4 @@
-import type { CanvasState, State } from "./types";
+import type { CanvasState, State, Point } from "./types";
 
 export const didMove = (
   originalState: CanvasState,
@@ -39,4 +39,42 @@ export const deleteSelectedStroke = (
       index: prev.index + 1,
     };
   });
+};
+
+export const getSelectionBounds = (start: Point, end: Point) => {
+  const left = Math.min(start.x, end.x);
+  const right = Math.max(start.x, end.x);
+  const top = Math.min(start.y, end.y);
+  const bottom = Math.max(start.y, end.y);
+  const width = right - left;
+  const height = bottom - top;
+
+  return { left, right, top, bottom, width, height };
+};
+
+export const getStrokesInsideBox = (
+  strokes: CanvasState,
+  bounds: { left: number; right: number; top: number; bottom: number },
+) => {
+  const { left, right, top, bottom } = bounds;
+
+  const selected = new Set<number>();
+
+  strokes.forEach((stroke, i) => {
+    const points = stroke.points;
+
+    const isInside = points.some(
+      (point) =>
+        point.x >= left &&
+        point.x <= right &&
+        point.y >= top &&
+        point.y <= bottom,
+    );
+
+    if (isInside) {
+      selected.add(i);
+    }
+  });
+
+  return selected;
 };

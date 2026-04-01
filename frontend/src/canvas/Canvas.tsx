@@ -8,7 +8,7 @@ import type {
   CanvasState,
 } from "./types";
 import { penTool, eraserTool, panTool, selectTool } from "./tools";
-import { deleteSelectedStroke } from "./utils";
+import { deleteSelectedStroke, getSelectionBounds } from "./utils";
 
 const HIT_TOLERANCE = 2;
 
@@ -23,9 +23,9 @@ function Canvas() {
   const [tool, setTool] = useState<Tool>("pen");
   const [cursorStyle, setCursorStyle] = useState("default");
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [selectedStrokeIndex, setSelectedStrokeIndex] = useState<number | null>(
-    null,
-  );
+  const [selectedStrokeIndexes, setSelectedStrokeIndexes] = useState<
+    Set<number>
+  >(new Set());
   const [color, setColor] = useState("#000000");
   const [width, setWidth] = useState(5);
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
@@ -140,7 +140,7 @@ function Canvas() {
       ctx.lineJoin = "round";
 
       // Update color on hover/select
-      if (i === selectedStrokeIndex) {
+      if (selectedStrokeIndexes.has(i)) {
         // Stroke's outline on select
         ctx.shadowColor = "rgb(0, 64, 255)";
         ctx.shadowBlur = 8;
@@ -165,15 +165,10 @@ function Canvas() {
     });
 
     if (startPointRef.current !== null && endPointRef.current !== null) {
-      const { x: startX, y: startY } = startPointRef.current;
-      const { x: endX, y: endY } = endPointRef.current;
-
-      const left = Math.min(startX, endX);
-      const right = Math.max(startX, endX);
-      const top = Math.min(startY, endY);
-      const bottom = Math.max(startY, endY);
-      const width = right - left;
-      const height = bottom - top;
+      const { left, top, width, height } = getSelectionBounds(
+        startPointRef.current,
+        endPointRef.current,
+      );
 
       // Draw filled rect with color
       ctx.fillStyle = "rgba(0, 0, 255, 0.2)";
@@ -290,7 +285,7 @@ function Canvas() {
       dragStart,
       selectedIndexRef,
       setHoveredIndex,
-      setSelectedStrokeIndex,
+      setSelectedStrokeIndexes,
       findStrokeIndex,
       state,
       setState,
@@ -318,7 +313,7 @@ function Canvas() {
     },
   };
   const handleToolSelection = (tool: Tool) => {
-    if (tool !== "select") setSelectedStrokeIndex(null);
+    if (tool !== "select") setSelectedStrokeIndexes(new Set());
 
     selectionTool[tool]();
   };
@@ -333,7 +328,7 @@ function Canvas() {
 
   useEffect(() => {
     redraw();
-  }, [strokes, hoveredIndex, viewport, selectedStrokeIndex]);
+  }, [strokes, hoveredIndex, viewport, selectedStrokeIndexes]);
 
   useEffect(() => {
     viewportRef.current = viewport;
@@ -401,7 +396,7 @@ function Canvas() {
         e.preventDefault();
 
         deleteSelectedStroke(setState, selectedIndex);
-        setSelectedStrokeIndex(null);
+        setSelectedStrokeIndexes(new Set());
         setHoveredIndex(null);
         setCursorStyle("pointer");
       }
