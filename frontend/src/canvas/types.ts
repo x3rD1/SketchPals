@@ -21,7 +21,7 @@ export type Tool = "pen" | "eraser" | "pan" | "select";
 export type SelectDeps = {
   isDragging: React.RefObject<boolean>;
   dragStart: React.RefObject<Point | null>;
-  selectedIndexRef: React.RefObject<number | null>;
+  selectedIndicesRef: React.RefObject<Set<number>>;
   setSelectedStrokeIndexes: React.Dispatch<React.SetStateAction<Set<number>>>;
   setHoveredIndex: React.Dispatch<React.SetStateAction<number | null>>;
   findStrokeIndex: (mouse: Point) => number | null;

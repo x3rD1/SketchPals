@@ -3,7 +3,7 @@
 ## What this project demonstrates
 
 - Custom canvas rendering engine
-- Tool system (pen, eraser, pan)
+- Tool system (pen, eraser, pan, select)
 - Viewport transformations (zoom + pan)
 - Hit detection for stroke selection
 - Undo/redo with history stack
@@ -20,6 +20,8 @@
 8. Optimized history system to separate preview vs committed state during drag
 9. Extracted reusable utility functions (movement detection, deleteSelectedStroke)
 10. Implemented keyboard shortcuts for faster interactions (Delete / Backspace support)
+11. Implemented selection box + multi-select
+12. Enabled dragging multiple strokes + keyboard delete support on multi-select
 
 ## Key Concepts
 

@@ -36,7 +36,7 @@ function Canvas() {
   const isPanning = useRef(false);
   const isDragging = useRef(false);
   const dragStart = useRef<Point | null>(null);
-  const selectedIndexRef = useRef<number | null>(null);
+  const selectedIndicesRef = useRef<Set<number>>(new Set());
   const initialMousePosition = useRef<Point>(null);
   const startPointRef = useRef<Point>(null);
   const endPointRef = useRef<Point>(null);
@@ -283,7 +283,7 @@ function Canvas() {
     select: selectTool({
       isDragging,
       dragStart,
-      selectedIndexRef,
+      selectedIndicesRef,
       setHoveredIndex,
       setSelectedStrokeIndexes,
       findStrokeIndex,
@@ -390,12 +390,13 @@ function Canvas() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Backspace" || e.key === "Delete") {
-        const selectedIndex = selectedIndexRef.current;
-        if (selectedIndex === null) return;
+        const selectedIndices = selectedIndicesRef.current;
+        if (selectedIndices.size <= 0) return;
 
         e.preventDefault();
 
-        deleteSelectedStroke(setState, selectedIndex);
+        deleteSelectedStroke(setState, selectedIndices);
+        selectedIndicesRef.current = new Set();
         setSelectedStrokeIndexes(new Set());
         setHoveredIndex(null);
         setCursorStyle("pointer");
