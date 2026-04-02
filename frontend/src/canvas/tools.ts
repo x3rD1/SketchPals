@@ -73,16 +73,20 @@ export const eraserTool = ({
   handleErase,
 }: EraserDeps) => ({
   onMouseDown(point: Point) {
+    const indexToRemove = findStrokeIndex(point);
+    if (indexToRemove === null) return;
+
+    handleErase(indexToRemove);
     setHoveredIndex(null);
-    handleErase(point);
   },
   onMouseMove(point: Point, { isDrawing }: { isDrawing: boolean }) {
-    const indexToHover = findStrokeIndex(point);
-    setHoveredIndex(indexToHover);
+    const index = findStrokeIndex(point);
 
-    if (isDrawing) {
+    if (isDrawing && index !== null) {
+      handleErase(index);
       setHoveredIndex(null);
-      handleErase(point);
+    } else {
+      setHoveredIndex(index);
     }
   },
   onMouseUp() {},
@@ -122,7 +126,7 @@ const handleSelectionBoxMouseUp = ({
   endPointRef,
   redraw,
   state,
-  setSelectedStrokeIndexes,
+  setSelectedIndices,
   selectedIndicesRef,
 }: {
   isSelectingBox: React.RefObject<boolean>;
@@ -130,7 +134,7 @@ const handleSelectionBoxMouseUp = ({
   endPointRef: React.RefObject<Point | null>;
   redraw: () => void;
   state: State;
-  setSelectedStrokeIndexes: React.Dispatch<React.SetStateAction<Set<number>>>;
+  setSelectedIndices: React.Dispatch<React.SetStateAction<Set<number>>>;
   selectedIndicesRef: React.RefObject<Set<number>>;
 }) => {
   if (!isSelectingBox.current) return;
@@ -154,7 +158,7 @@ const handleSelectionBoxMouseUp = ({
   const selected = getStrokesInsideBox(strokes, bounds);
 
   selectedIndicesRef.current = selected;
-  setSelectedStrokeIndexes(selected);
+  setSelectedIndices(selected);
 
   resetSelectionBox({ startPointRef, endPointRef, isSelectingBox });
 
@@ -212,7 +216,7 @@ export const selectTool = ({
   dragStart,
   selectedIndicesRef,
   setHoveredIndex,
-  setSelectedStrokeIndexes,
+  setSelectedIndices,
   findStrokeIndex,
   state,
   setState,
@@ -227,73 +231,82 @@ export const selectTool = ({
     const index = findStrokeIndex(point);
 
     if (index !== null) {
-      if (!selectedIndicesRef.current.has(index)) {
-        selectedIndicesRef.current = new Set([index]);
-        setSelectedStrokeIndexes(new Set([index]));
+      const isAlreadySelected = selectedIndicesRef.current.has(index);
+
+      if (!isAlreadySelected) {
+        const newSelection = new Set([index]);
+        selectedIndicesRef.current = newSelection;
+        setSelectedIndices(newSelection);
       }
+
+      // drag mode
       isSelectingBox.current = false;
       isDragging.current = true;
       dragStart.current = point;
       initialStateRef.current = state.history[state.index];
-    } else {
-      isDragging.current = false;
-      dragStart.current = null;
-      isSelectingBox.current = true;
-      startPointRef.current = point;
-      setCursorStyle("pointer");
-      setSelectedStrokeIndexes(new Set());
-      selectedIndicesRef.current = new Set();
+
+      return;
     }
+
+    // clear selection
+    selectedIndicesRef.current = new Set();
+    setSelectedIndices(new Set());
+
+    ((isDragging.current = false), (dragStart.current = null));
+    ((isSelectingBox.current = true), (startPointRef.current = point));
+
+    setCursorStyle("pointer");
   },
   onMouseMove(point: Point) {
     const index = findStrokeIndex(point);
 
-    if (!isDragging.current) {
-      setHoveredIndex(index); // Highlight a stroke if dragging is false
+    if (isDragging.current && dragStart.current !== null) {
+      setCursorStyle("grabbing");
+
+      // Calculate distance between dragStart and mouse position in world coords
+      const dx = point.x - dragStart.current.x;
+      const dy = point.y - dragStart.current.y;
+
+      // Preview
+      // Update latest state by moving each state's stroke's points by dx,dy as preview
+      setState((prev) => {
+        const currentIndex = prev.index;
+        const history = [...prev.history]; // Create a shallow copy of prev.history
+
+        const base = initialStateRef.current; // Use the stable original state
+        if (base === null) return prev;
+
+        const updatedState = base.map((stroke, i) => {
+          if (!selectedIndicesRef.current.has(i)) return stroke; // Keep untouched stroke unmoved
+
+          // Move selected stroke by dx,dy
+          return {
+            ...stroke,
+            points: stroke.points.map((p) => ({
+              x: p.x + dx,
+              y: p.y + dy,
+            })),
+          };
+        });
+
+        history[currentIndex] = updatedState; // Mutate the history's current state
+
+        return {
+          history,
+          index: currentIndex,
+        };
+      });
+
+      return;
     }
 
     if (isSelectingBox.current) {
       endPointRef.current = point;
       redraw();
+      return;
     }
 
-    if (!isDragging.current || dragStart.current === null) return;
-
-    setCursorStyle("grabbing");
-
-    // Calculate distance between dragStart and mouse position in world coords
-    const dx = point.x - dragStart.current.x;
-    const dy = point.y - dragStart.current.y;
-
-    // Preview
-    // Update latest state by moving each state's stroke's points by dx,dy as preview
-    setState((prev) => {
-      const currentIndex = prev.index;
-      const history = [...prev.history]; // Create a shallow copy of prev.history
-
-      const base = initialStateRef.current; // Use the stable original state
-      if (base === null) return prev;
-
-      const updatedState = base.map((stroke, i) => {
-        if (!selectedIndicesRef.current.has(i)) return stroke; // Keep untouched stroke unmoved
-
-        // Move selected stroke by dx,dy
-        return {
-          ...stroke,
-          points: stroke.points.map((p) => ({
-            x: p.x + dx,
-            y: p.y + dy,
-          })),
-        };
-      });
-
-      history[currentIndex] = updatedState; // Mutate the history's current state
-
-      return {
-        history,
-        index: currentIndex,
-      };
-    });
+    setHoveredIndex(index); // Highlight a stroke on hover
   },
   onMouseUp(point: Point) {
     if (isSelectingBox.current) {
@@ -303,7 +316,7 @@ export const selectTool = ({
         endPointRef,
         redraw,
         state,
-        setSelectedStrokeIndexes,
+        setSelectedIndices,
         selectedIndicesRef,
       });
     }

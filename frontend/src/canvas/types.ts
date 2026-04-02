@@ -22,7 +22,7 @@ export type SelectDeps = {
   isDragging: React.RefObject<boolean>;
   dragStart: React.RefObject<Point | null>;
   selectedIndicesRef: React.RefObject<Set<number>>;
-  setSelectedStrokeIndexes: React.Dispatch<React.SetStateAction<Set<number>>>;
+  setSelectedIndices: React.Dispatch<React.SetStateAction<Set<number>>>;
   setHoveredIndex: React.Dispatch<React.SetStateAction<number | null>>;
   findStrokeIndex: (mouse: Point) => number | null;
   state: State;
@@ -54,7 +54,7 @@ export type PenDeps = {
 export type EraserDeps = {
   findStrokeIndex: (mouse: Point) => number | null;
   setHoveredIndex: React.Dispatch<React.SetStateAction<number | null>>;
-  handleErase: (point: Point) => void;
+  handleErase: (indexToRemove: number) => void;
 };
 
 export type Viewport = {
