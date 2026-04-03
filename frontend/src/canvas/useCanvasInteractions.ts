@@ -16,10 +16,8 @@ export function useCanvasInteractions() {
   const [state, setState] = useState<State>({ history: [[]], index: 0 });
   const [tool, setTool] = useState<Tool>("pen");
   const [cursorStyle, setCursorStyle] = useState("default");
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [selectedIndices, setSelectedIndices] = useState<Set<number>>(
-    new Set(),
-  );
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [viewport, setViewport] = useState<Viewport>({
     offsetX: 0,
     offsetY: 0,
@@ -48,7 +46,7 @@ export function useCanvasInteractions() {
   const startPointRef = useRef<Point>(null);
   const endPointRef = useRef<Point>(null);
 
-  const selectedIndicesRef = useRef<Set<number>>(new Set());
+  const selectedIdsRef = useRef<Set<string>>(new Set());
 
   const strokes = state.history[state.index] || [];
 
@@ -102,7 +100,7 @@ export function useCanvasInteractions() {
     return distance < radius;
   };
 
-  const findStrokeIndex = (mouse: Point) => {
+  const findStrokeId = (mouse: Point) => {
     const currentState = state.history[state.index];
     if (!currentState) return null;
     // Loop over current strokes
@@ -117,8 +115,8 @@ export function useCanvasInteractions() {
         const p2 = points[j + 1];
 
         if (isPointNearSegment(p1, p2, mouse, radius)) {
-          // console.log("A stroke has been hovered", i);
-          return i;
+          // return stroke's id
+          return stroke.id;
         }
       }
     }
@@ -151,7 +149,7 @@ export function useCanvasInteractions() {
       ...(currentStroke.current ? [currentStroke.current] : []),
     ];
 
-    allStrokes.forEach((stroke, i) => {
+    allStrokes.forEach((stroke) => {
       ctx.beginPath();
 
       stroke.points.forEach((point, index) => {
@@ -166,7 +164,7 @@ export function useCanvasInteractions() {
       ctx.lineJoin = "round";
 
       // Update color on hover/select
-      if (selectedIndices.has(i)) {
+      if (selectedIds.has(stroke.id)) {
         // Stroke's outline on select
         ctx.shadowColor = "rgb(0, 64, 255)";
         ctx.shadowBlur = 8;
@@ -179,7 +177,7 @@ export function useCanvasInteractions() {
         ctx.lineWidth = stroke.width;
         ctx.strokeStyle = "black";
         ctx.stroke();
-      } else if (i === hoveredIndex) {
+      } else if (stroke.id === hoveredId) {
         ctx.lineWidth = stroke.width;
         ctx.strokeStyle = "gray";
         ctx.stroke();
@@ -219,14 +217,14 @@ export function useCanvasInteractions() {
     setState((prev) => ({ ...prev, index: prev.index + 1 }));
   };
 
-  const handleErase = (indexToRemove: number) => {
+  const handleErase = (idToRemove: string) => {
     setState((prev) => {
       const newHistory = prev.history.slice(0, prev.index + 1);
       const lastState = newHistory[newHistory.length - 1];
 
       if (!lastState) return prev;
 
-      const newState = lastState.filter((_, i) => i !== indexToRemove);
+      const newState = lastState.filter((stroke) => stroke.id !== idToRemove);
 
       newHistory.push(newState);
 
@@ -240,18 +238,18 @@ export function useCanvasInteractions() {
   const tools = {
     pen: penTool({ redraw, setState, isDrawing, currentStroke, color, width }),
     eraser: eraserTool({
-      findStrokeIndex,
-      setHoveredIndex,
+      findStrokeId,
+      setHoveredId,
       handleErase,
     }),
     pan: panTool({ isPanning, viewport, setViewport, initialMousePosition }),
     select: selectTool({
       isDragging,
       dragStart,
-      selectedIndicesRef,
-      setHoveredIndex,
-      setSelectedIndices,
-      findStrokeIndex,
+      selectedIdsRef,
+      setHoveredId,
+      setSelectedIds,
+      findStrokeId,
       state,
       setState,
       initialStateRef,
@@ -306,7 +304,7 @@ export function useCanvasInteractions() {
     },
   };
   const handleToolSelection = (tool: Tool) => {
-    if (tool !== "select") setSelectedIndices(new Set());
+    if (tool !== "select") setSelectedIds(new Set());
 
     selectionTool[tool]();
   };
@@ -321,7 +319,7 @@ export function useCanvasInteractions() {
 
   useEffect(() => {
     redraw();
-  }, [strokes, hoveredIndex, viewport, selectedIndices]);
+  }, [strokes, hoveredId, viewport, selectedIds]);
 
   useEffect(() => {
     viewportRef.current = viewport;
@@ -382,15 +380,15 @@ export function useCanvasInteractions() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Backspace" || e.key === "Delete") {
-        const selectedIndices = selectedIndicesRef.current;
-        if (selectedIndices.size <= 0) return;
+        const selectedIds = selectedIdsRef.current;
+        if (selectedIds.size <= 0) return;
 
         e.preventDefault();
 
-        deleteSelectedStroke(setState, selectedIndices);
-        selectedIndicesRef.current = new Set();
-        setSelectedIndices(new Set());
-        setHoveredIndex(null);
+        deleteSelectedStroke(setState, selectedIds);
+        selectedIdsRef.current = new Set();
+        setSelectedIds(new Set());
+        setHoveredId(null);
         setCursorStyle("pointer");
       }
     };

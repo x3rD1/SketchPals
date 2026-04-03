@@ -3,13 +3,13 @@ import type { CanvasState, State, Point } from "./types";
 export const didMove = (
   originalState: CanvasState,
   finalState: CanvasState,
-  selectedIndicesRef: React.RefObject<Set<number>>,
+  selectedIdsRef: React.RefObject<Set<string>>,
 ): boolean => {
-  const originalStrokePoints = originalState.find((_, i) =>
-    selectedIndicesRef.current.has(i),
+  const originalStrokePoints = originalState.find((stroke) =>
+    selectedIdsRef.current.has(stroke.id),
   )?.points;
-  const finalStrokePoints = finalState.find((_, i) =>
-    selectedIndicesRef.current.has(i),
+  const finalStrokePoints = finalState.find((stroke) =>
+    selectedIdsRef.current.has(stroke.id),
   )?.points;
 
   if (originalStrokePoints === undefined || finalStrokePoints === undefined)
@@ -23,14 +23,16 @@ export const didMove = (
 
 export const deleteSelectedStroke = (
   setState: React.Dispatch<React.SetStateAction<State>>,
-  selectedIndices: Set<number>,
+  selectedIds: Set<string>,
 ) => {
   setState((prev) => {
     const currentIndex = prev.index;
     const newHistory = prev.history.slice(0, currentIndex + 1);
     const currentState = newHistory[currentIndex];
 
-    const updatedState = currentState.filter((_, i) => !selectedIndices.has(i));
+    const updatedState = currentState.filter(
+      (stroke) => !selectedIds.has(stroke.id),
+    );
 
     newHistory.push(updatedState);
 
@@ -58,9 +60,9 @@ export const getStrokesInsideBox = (
 ) => {
   const { left, right, top, bottom } = bounds;
 
-  const selected = new Set<number>();
+  const selected = new Set<string>();
 
-  strokes.forEach((stroke, i) => {
+  strokes.forEach((stroke) => {
     const points = stroke.points;
 
     const isInside = points.some(
@@ -72,7 +74,7 @@ export const getStrokesInsideBox = (
     );
 
     if (isInside) {
-      selected.add(i);
+      selected.add(stroke.id);
     }
   });
 

@@ -4,6 +4,7 @@ export type Point = {
 };
 
 export type Stroke = {
+  id: string;
   points: Point[];
   color: string;
   width: number;
@@ -21,10 +22,10 @@ export type Tool = "pen" | "eraser" | "pan" | "select";
 export type SelectDeps = {
   isDragging: React.RefObject<boolean>;
   dragStart: React.RefObject<Point | null>;
-  selectedIndicesRef: React.RefObject<Set<number>>;
-  setSelectedIndices: React.Dispatch<React.SetStateAction<Set<number>>>;
-  setHoveredIndex: React.Dispatch<React.SetStateAction<number | null>>;
-  findStrokeIndex: (mouse: Point) => number | null;
+  selectedIdsRef: React.RefObject<Set<string>>;
+  setSelectedIds: React.Dispatch<React.SetStateAction<Set<string>>>;
+  setHoveredId: React.Dispatch<React.SetStateAction<string | null>>;
+  findStrokeId: (mouse: Point) => string | null;
   state: State;
   setState: React.Dispatch<React.SetStateAction<State>>;
   initialStateRef: React.RefObject<CanvasState | null>;
@@ -52,9 +53,9 @@ export type PenDeps = {
 };
 
 export type EraserDeps = {
-  findStrokeIndex: (mouse: Point) => number | null;
-  setHoveredIndex: React.Dispatch<React.SetStateAction<number | null>>;
-  handleErase: (indexToRemove: number) => void;
+  findStrokeId: (mouse: Point) => string | null;
+  setHoveredId: React.Dispatch<React.SetStateAction<string | null>>;
+  handleErase: (idToRemove: string) => void;
 };
 
 export type Viewport = {

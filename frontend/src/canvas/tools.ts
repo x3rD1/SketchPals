@@ -27,6 +27,7 @@ export const penTool = ({
     isDrawing.current = true;
 
     currentStroke.current = {
+      id: crypto.randomUUID(),
       points: [point],
       color,
       width,
@@ -68,25 +69,25 @@ export const penTool = ({
 });
 
 export const eraserTool = ({
-  findStrokeIndex,
-  setHoveredIndex,
+  findStrokeId,
+  setHoveredId,
   handleErase,
 }: EraserDeps) => ({
   onMouseDown(point: Point) {
-    const indexToRemove = findStrokeIndex(point);
-    if (indexToRemove === null) return;
+    const idToRemove = findStrokeId(point);
+    if (idToRemove === null) return;
 
-    handleErase(indexToRemove);
-    setHoveredIndex(null);
+    handleErase(idToRemove);
+    setHoveredId(null);
   },
   onMouseMove(point: Point, { isDrawing }: { isDrawing: boolean }) {
-    const index = findStrokeIndex(point);
+    const index = findStrokeId(point);
 
     if (isDrawing && index !== null) {
       handleErase(index);
-      setHoveredIndex(null);
+      setHoveredId(null);
     } else {
-      setHoveredIndex(index);
+      setHoveredId(index);
     }
   },
   onMouseUp() {},
@@ -126,16 +127,16 @@ const handleSelectionBoxMouseUp = ({
   endPointRef,
   redraw,
   state,
-  setSelectedIndices,
-  selectedIndicesRef,
+  setSelectedIds,
+  selectedIdsRef,
 }: {
   isSelectingBox: React.RefObject<boolean>;
   startPointRef: React.RefObject<Point | null>;
   endPointRef: React.RefObject<Point | null>;
   redraw: () => void;
   state: State;
-  setSelectedIndices: React.Dispatch<React.SetStateAction<Set<number>>>;
-  selectedIndicesRef: React.RefObject<Set<number>>;
+  setSelectedIds: React.Dispatch<React.SetStateAction<Set<string>>>;
+  selectedIdsRef: React.RefObject<Set<string>>;
 }) => {
   if (!isSelectingBox.current) return;
 
@@ -157,8 +158,8 @@ const handleSelectionBoxMouseUp = ({
   const strokes = state.history[state.index];
   const selected = getStrokesInsideBox(strokes, bounds);
 
-  selectedIndicesRef.current = selected;
-  setSelectedIndices(selected);
+  selectedIdsRef.current = selected;
+  setSelectedIds(selected);
 
   resetSelectionBox({ startPointRef, endPointRef, isSelectingBox });
 
@@ -169,14 +170,14 @@ const handleDragMouseUp = ({
   isDragging,
   dragStart,
   initialStateRef,
-  selectedIndicesRef,
+  selectedIdsRef,
   setCursorStyle,
   setState,
 }: {
   isDragging: React.RefObject<boolean>;
   dragStart: React.RefObject<Point | null>;
   initialStateRef: React.RefObject<CanvasState | null>;
-  selectedIndicesRef: React.RefObject<Set<number>>;
+  selectedIdsRef: React.RefObject<Set<string>>;
   setCursorStyle: React.Dispatch<React.SetStateAction<string>>;
   setState: React.Dispatch<React.SetStateAction<State>>;
 }) => {
@@ -193,7 +194,7 @@ const handleDragMouseUp = ({
 
     const finalState = newHistory[currentIndex]; // current preview
 
-    if (!didMove(originalState, finalState, selectedIndicesRef)) return prev;
+    if (!didMove(originalState, finalState, selectedIdsRef)) return prev;
 
     // restore original
     newHistory[currentIndex] = originalState;
@@ -214,10 +215,10 @@ const handleDragMouseUp = ({
 export const selectTool = ({
   isDragging,
   dragStart,
-  selectedIndicesRef,
-  setHoveredIndex,
-  setSelectedIndices,
-  findStrokeIndex,
+  selectedIdsRef,
+  setHoveredId,
+  setSelectedIds,
+  findStrokeId,
   state,
   setState,
   initialStateRef,
@@ -228,15 +229,15 @@ export const selectTool = ({
   redraw,
 }: SelectDeps) => ({
   onMouseDown(point: Point) {
-    const index = findStrokeIndex(point);
+    const id = findStrokeId(point);
 
-    if (index !== null) {
-      const isAlreadySelected = selectedIndicesRef.current.has(index);
+    if (id !== null) {
+      const isAlreadySelected = selectedIdsRef.current.has(id);
 
       if (!isAlreadySelected) {
-        const newSelection = new Set([index]);
-        selectedIndicesRef.current = newSelection;
-        setSelectedIndices(newSelection);
+        const newSelection = new Set([id]);
+        selectedIdsRef.current = newSelection;
+        setSelectedIds(newSelection);
       }
 
       // drag mode
@@ -249,8 +250,8 @@ export const selectTool = ({
     }
 
     // clear selection
-    selectedIndicesRef.current = new Set();
-    setSelectedIndices(new Set());
+    selectedIdsRef.current = new Set();
+    setSelectedIds(new Set());
 
     ((isDragging.current = false), (dragStart.current = null));
     ((isSelectingBox.current = true), (startPointRef.current = point));
@@ -258,7 +259,7 @@ export const selectTool = ({
     setCursorStyle("pointer");
   },
   onMouseMove(point: Point) {
-    const index = findStrokeIndex(point);
+    const index = findStrokeId(point);
 
     if (isDragging.current && dragStart.current !== null) {
       setCursorStyle("grabbing");
@@ -276,8 +277,8 @@ export const selectTool = ({
         const base = initialStateRef.current; // Use the stable original state
         if (base === null) return prev;
 
-        const updatedState = base.map((stroke, i) => {
-          if (!selectedIndicesRef.current.has(i)) return stroke; // Keep untouched stroke unmoved
+        const updatedState = base.map((stroke) => {
+          if (!selectedIdsRef.current.has(stroke.id)) return stroke; // Keep untouched stroke unmoved
 
           // Move selected stroke by dx,dy
           return {
@@ -306,7 +307,7 @@ export const selectTool = ({
       return;
     }
 
-    setHoveredIndex(index); // Highlight a stroke on hover
+    setHoveredId(index); // Highlight a stroke on hover
   },
   onMouseUp(point: Point) {
     if (isSelectingBox.current) {
@@ -316,8 +317,8 @@ export const selectTool = ({
         endPointRef,
         redraw,
         state,
-        setSelectedIndices,
-        selectedIndicesRef,
+        setSelectedIds,
+        selectedIdsRef,
       });
     }
 
@@ -326,7 +327,7 @@ export const selectTool = ({
         isDragging,
         dragStart,
         initialStateRef,
-        selectedIndicesRef,
+        selectedIdsRef,
         setCursorStyle,
         setState,
       });
