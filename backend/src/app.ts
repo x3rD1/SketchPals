@@ -1,6 +1,9 @@
 import express from "express";
 import cors from "cors";
-import { prisma } from "./lib/prisma";
+
+import router from "./features/stroke/stroke.router";
+import { errorMiddleware } from "./middlewares/errorMiddleware";
+
 const app = express();
 
 app.use(cors());
@@ -10,28 +13,11 @@ app.get("/", (req, res) => {
   res.send("API is running!");
 });
 
-app.get("/strokes", async (req, res) => {
-  try {
-    const strokes = await prisma.stroke.findMany();
+// Routes
+app.use("/strokes", router);
 
-    res.json(strokes);
-  } catch (error) {
-    console.log(error);
-  }
-});
-
-app.post("/strokes", async (req, res) => {
-  try {
-    const { points } = req.body;
-
-    const stroke = await prisma.stroke.create({ data: { points } });
-
-    res.json(stroke);
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: "Something went wrong" });
-  }
-});
+// Custom Errors
+app.use(errorMiddleware);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
