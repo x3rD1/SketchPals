@@ -1,21 +1,26 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output = "../generated/prisma"
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
 }
 
+model Canvas {
+  id      String   @id @default(uuid())
+  strokes Stroke[]
+  version Int      @default(0)
+
+  @@map("canvas")
+}
+
 model Stroke {
-  id  String @id @default(uuid())
-  points Json
+  id        String   @id
+  points    Json
   createdAt DateTime @default(now())
+  canvasId  String
+  canvas    Canvas   @relation(fields: [canvasId], references: [id], onDelete: Cascade)
 
   @@map("strokes")
 }
