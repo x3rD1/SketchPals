@@ -1,7 +1,8 @@
 import express from "express";
 import cors from "cors";
 
-import router from "./features/stroke/stroke.router";
+import canvasRouter from "./features/canvas/canvas.router";
+import strokeRouter from "./features/stroke/stroke.router";
 import { errorMiddleware } from "./middlewares/errorMiddleware";
 
 const app = express();
@@ -14,7 +15,8 @@ app.get("/", (req, res) => {
 });
 
 // Routes
-app.use("/strokes", router);
+app.use("/canvas", canvasRouter);
+app.use("/strokes", strokeRouter);
 
 // Custom Errors
 app.use(errorMiddleware);
