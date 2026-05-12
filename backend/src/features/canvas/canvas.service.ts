@@ -25,45 +25,53 @@ export const createCanvas = async () => {
 export const updateCanvas = async ({
   id,
   strokes,
+  version,
 }: {
   id: string;
   strokes: StrokeInput[];
-}) => {
-  // Get all strokes by canvas id
-  const existingStrokes = await prisma.stroke.findMany({
-    where: { canvasId: id },
-  });
+  version: number;
+}) =>
+  await prisma.$transaction(async (tx) => {
+    const canvas = await tx.canvas.findUnique({ where: { id } });
+    if (!canvas)
+      throw new AppError("Canvas not found", 404, "CANVAS_NOT_FOUND");
 
-  // Create a fast lookup map for each existing stroke in DB
-  const existingMap = new Map(existingStrokes.map((s) => [s.id, s]));
+    if (canvas.version !== version)
+      throw new AppError(
+        "Canvas version conflict",
+        400,
+        "CANVAS_VERSION_CONFLICT",
+      );
 
-  // Create or Update a stroke
-  await prisma.$transaction(
-    strokes.map((stroke) => {
+    // Get all strokes by canvas id
+    const existingStrokes = await tx.stroke.findMany({
+      where: { canvasId: id },
+    });
+
+    // Create a fast lookup map for each existing stroke in DB
+    const existingMap = new Map(existingStrokes.map((s) => [s.id, s]));
+
+    // Create or Update a stroke
+    for (const stroke of strokes) {
       if (existingMap.has(stroke.id)) {
-        return prisma.stroke.update({
+        await tx.stroke.update({
           where: { id: stroke.id },
           data: { points: stroke.points },
         });
       } else {
-        return prisma.stroke.create({
+        await tx.stroke.create({
           data: { id: stroke.id, points: stroke.points, canvasId: id },
         });
       }
-    }),
-  );
+    }
 
-  // Create a fast lookup set for incoming strokes by id
-  const incomingStrokeIds = new Set(strokes.map((s) => s.id));
+    await tx.stroke.deleteMany({
+      where: { id: { notIn: strokes.map((s) => s.id) } },
+    });
 
-  const toDelete = existingStrokes.filter((s) => !incomingStrokeIds.has(s.id));
-
-  await prisma.stroke.deleteMany({
-    where: { id: { in: toDelete.map((s) => s.id) } },
+    return tx.canvas.update({
+      where: { id },
+      data: { version: { increment: 1 } },
+      include: { strokes: true },
+    });
   });
-
-  return prisma.canvas.findUnique({
-    where: { id },
-    include: { strokes: true },
-  });
-};
