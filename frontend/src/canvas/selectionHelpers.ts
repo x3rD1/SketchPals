@@ -9,7 +9,7 @@ export const resetSelectionBox = ({
   endPointRef: React.RefObject<Point | null>;
   isSelectingBox: React.RefObject<boolean>;
 }) => {
-  ((startPointRef.current = null),
-    (endPointRef.current = null),
-    (isSelectingBox.current = false));
+  startPointRef.current = null;
+  endPointRef.current = null;
+  isSelectingBox.current = false;
 };

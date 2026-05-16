@@ -253,8 +253,10 @@ export const selectTool = ({
     selectedIdsRef.current = new Set();
     setSelectedIds(new Set());
 
-    ((isDragging.current = false), (dragStart.current = null));
-    ((isSelectingBox.current = true), (startPointRef.current = point));
+    isDragging.current = false;
+    dragStart.current = null;
+    isSelectingBox.current = true;
+    startPointRef.current = point;
 
     setCursorStyle("pointer");
   },
