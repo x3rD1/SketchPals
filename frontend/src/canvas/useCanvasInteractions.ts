@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import type {
   CanvasState,
   Point,
@@ -13,6 +14,9 @@ import { deleteSelectedStroke, getSelectionBounds } from "./utils";
 const HIT_TOLERANCE = 2;
 
 export function useCanvasInteractions() {
+  const [canvasId, setCanvasId] = useState<string | null>(null);
+  const [version, setVersion] = useState<number>(0);
+
   const [state, setState] = useState<State>({ history: [[]], index: 0 });
   const [tool, setTool] = useState<Tool>("pen");
   const [cursorStyle, setCursorStyle] = useState("default");
@@ -47,8 +51,6 @@ export function useCanvasInteractions() {
   const endPointRef = useRef<Point>(null);
 
   const selectedIdsRef = useRef<Set<string>>(new Set());
-
-  const strokes = state.history[state.index] || [];
 
   const getMousePos = (e: { clientX: number; clientY: number }) => {
     const canvas = canvasRef.current;
@@ -101,8 +103,8 @@ export function useCanvasInteractions() {
   };
 
   const findStrokeId = (mouse: Point) => {
-    const currentState = state.history[state.index];
-    if (!currentState) return null;
+    const strokes = state.history[state.index] || [];
+    if (!strokes) return null;
     // Loop over current strokes
     for (let i = strokes.length - 1; i >= 0; i--) {
       const stroke = strokes[i];
@@ -123,7 +125,9 @@ export function useCanvasInteractions() {
     return null;
   };
 
-  const redraw = () => {
+  const redraw = useCallback(() => {
+    const strokes = state.history[state.index] || [];
+
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
 
@@ -203,7 +207,7 @@ export function useCanvasInteractions() {
       ctx.lineWidth = 1;
       ctx.strokeRect(left, top, width, height);
     }
-  };
+  }, [hoveredId, selectedIds, state.history, state.index, viewport]);
 
   const handleUndo = () => {
     if (state.index === 0) return;
@@ -289,25 +293,31 @@ export function useCanvasInteractions() {
     isDrawing.current = false;
   };
 
-  const selectionTool = {
-    pen: () => {
-      setCursorStyle("crosshair");
-    },
-    eraser: () => {
-      setCursorStyle("cell");
-    },
-    pan: () => {
-      setCursorStyle("grab");
-    },
-    select: () => {
-      setCursorStyle("pointer");
-    },
-  };
-  const handleToolSelection = (tool: Tool) => {
-    if (tool !== "select") setSelectedIds(new Set());
+  const selectionTool = useMemo(
+    () => ({
+      pen: () => {
+        setCursorStyle("crosshair");
+      },
+      eraser: () => {
+        setCursorStyle("cell");
+      },
+      pan: () => {
+        setCursorStyle("grab");
+      },
+      select: () => {
+        setCursorStyle("pointer");
+      },
+    }),
+    [],
+  );
+  const handleToolSelection = useCallback(
+    (tool: Tool) => {
+      if (tool !== "select") setSelectedIds(new Set());
 
-    selectionTool[tool]();
-  };
+      selectionTool[tool]();
+    },
+    [selectionTool],
+  );
 
   // Stating the canvas
   useEffect(() => {
@@ -319,12 +329,13 @@ export function useCanvasInteractions() {
 
   useEffect(() => {
     redraw();
-  }, [strokes, hoveredId, viewport, selectedIds]);
+  }, [redraw, hoveredId, viewport, selectedIds]);
 
   useEffect(() => {
     viewportRef.current = viewport;
   }, [viewport]);
 
+  // Zoom in/out using mouse wheel
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -377,6 +388,7 @@ export function useCanvasInteractions() {
     handleToolSelection(tool);
   }, [tool]);
 
+  // Erase stroke/s with backspace/delete button
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Backspace" || e.key === "Delete") {
@@ -398,7 +410,53 @@ export function useCanvasInteractions() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  const { id } = useParams();
+  const hasCreatedCanvas = useRef(false); //Prevents double-create on dev
+  const navigate = useNavigate();
+
+  //TODO: Add a conditional statement to check first if theres an existing canvas if not create one
+  useEffect(() => {
+    if (id) {
+      const getCanvas = async () => {
+        const res = await fetch(`http://localhost:3000/canvas/${id}`);
+
+        const data = await res.json();
+
+        setCanvasId(data.id);
+        setVersion(data.version);
+        setState({ history: [data.strokes], index: 0 });
+      };
+
+      getCanvas();
+
+      return;
+    }
+
+    if (hasCreatedCanvas.current) return;
+
+    hasCreatedCanvas.current = true;
+
+    const createCanvas = async () => {
+      const res = await fetch("http://localhost:3000/canvas", {
+        method: "POST",
+      });
+
+      const data = await res.json();
+
+      setCanvasId(data.id);
+      setVersion(data.version);
+      setState({ history: [data.strokes], index: 0 });
+
+      navigate(`/canvas/${data.id}`);
+    };
+
+    createCanvas();
+  }, [id, navigate]);
+
   return {
+    canvasId,
+    version,
+
     state,
 
     canvasRef,
