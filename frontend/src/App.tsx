@@ -1,11 +1,10 @@
-import Canvas from "./canvas/Canvas";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import routes from "./routes";
+
+const router = createBrowserRouter(routes);
 
 function App() {
-  return (
-    <div>
-      <Canvas />
-    </div>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;
