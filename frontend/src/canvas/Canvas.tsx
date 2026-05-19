@@ -12,7 +12,7 @@ function Canvas() {
     handleRedo,
     setColor,
     setWidth,
-    setTool,
+    selectionTool,
     color,
     width,
     cursorStyle,
@@ -40,8 +40,8 @@ function Canvas() {
       >
         Redo
       </button>
-      <button onClick={() => setTool("pen")}>Pencil</button>
-      <button onClick={() => setTool("eraser")}>Eraser</button>
+      <button onClick={() => selectionTool("pen")}>Pencil</button>
+      <button onClick={() => selectionTool("eraser")}>Eraser</button>
       <input
         type="color"
         value={color}
@@ -54,8 +54,8 @@ function Canvas() {
         max={20}
         onChange={(e) => setWidth(Number(e.target.value))}
       />
-      <button onClick={() => setTool("pan")}>Pan</button>
-      <button onClick={() => setTool("select")}>Select</button>
+      <button onClick={() => selectionTool("pan")}>Pan</button>
+      <button onClick={() => selectionTool("select")}>Select</button>
     </>
   );
 }

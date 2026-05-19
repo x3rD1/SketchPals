@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type {
   CanvasState,
@@ -19,7 +19,7 @@ export function useCanvasInteractions() {
 
   const [state, setState] = useState<State>({ history: [[]], index: 0 });
   const [tool, setTool] = useState<Tool>("pen");
-  const [cursorStyle, setCursorStyle] = useState("default");
+  const [cursorStyle, setCursorStyle] = useState("crosshair");
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [viewport, setViewport] = useState<Viewport>({
@@ -293,31 +293,31 @@ export function useCanvasInteractions() {
     isDrawing.current = false;
   };
 
-  const selectionTool = useMemo(
-    () => ({
-      pen: () => {
-        setCursorStyle("crosshair");
-      },
-      eraser: () => {
-        setCursorStyle("cell");
-      },
-      pan: () => {
-        setCursorStyle("grab");
-      },
-      select: () => {
-        setCursorStyle("pointer");
-      },
-    }),
-    [],
-  );
-  const handleToolSelection = useCallback(
-    (tool: Tool) => {
-      if (tool !== "select") setSelectedIds(new Set());
+  const selectionTool = (newTool: Tool) => {
+    setTool(newTool);
 
-      selectionTool[tool]();
-    },
-    [selectionTool],
-  );
+    switch (newTool) {
+      case "pen":
+        setCursorStyle("crosshair");
+        break;
+
+      case "eraser":
+        setCursorStyle("cell");
+        break;
+
+      case "pan":
+        setCursorStyle("grab");
+        break;
+
+      case "select":
+        setCursorStyle("pointer");
+        break;
+
+      default:
+        setCursorStyle("crosshair");
+        break;
+    }
+  };
 
   // Stating the canvas
   useEffect(() => {
@@ -383,11 +383,6 @@ export function useCanvasInteractions() {
     };
   }, []);
 
-  // Change cursor style on tool change
-  useEffect(() => {
-    handleToolSelection(tool);
-  }, [tool]);
-
   // Erase stroke/s with backspace/delete button
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -414,8 +409,8 @@ export function useCanvasInteractions() {
   const hasCreatedCanvas = useRef(false); //Prevents double-create on dev
   const navigate = useNavigate();
 
-  //TODO: Add a conditional statement to check first if theres an existing canvas if not create one
   useEffect(() => {
+    // Use existing canvas using id
     if (id) {
       const getCanvas = async () => {
         const res = await fetch(`http://localhost:3000/canvas/${id}`);
@@ -436,6 +431,7 @@ export function useCanvasInteractions() {
 
     hasCreatedCanvas.current = true;
 
+    // Create new canvas
     const createCanvas = async () => {
       const res = await fetch("http://localhost:3000/canvas", {
         method: "POST",
@@ -466,13 +462,13 @@ export function useCanvasInteractions() {
     handleMouseUp,
     handleMouseLeave,
 
+    selectionTool,
     cursorStyle,
     color,
     width,
 
     setColor,
     setWidth,
-    setTool,
 
     handleUndo,
     handleRedo,
