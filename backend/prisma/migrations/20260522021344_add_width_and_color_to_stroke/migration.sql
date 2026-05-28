@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "strokes" ADD COLUMN     "color" TEXT NOT NULL DEFAULT '#000000',
+ADD COLUMN     "width" INTEGER NOT NULL DEFAULT 5;
