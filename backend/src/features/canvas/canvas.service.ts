@@ -56,15 +56,26 @@ export const updateCanvas = async ({
       if (existingMap.has(stroke.id)) {
         await tx.stroke.update({
           where: { id: stroke.id },
-          data: { points: stroke.points },
+          data: {
+            points: stroke.points,
+            width: stroke.width,
+            color: stroke.color,
+          },
         });
       } else {
         await tx.stroke.create({
-          data: { id: stroke.id, points: stroke.points, canvasId: id },
+          data: {
+            id: stroke.id,
+            points: stroke.points,
+            width: stroke.width,
+            color: stroke.color,
+            canvasId: id,
+          },
         });
       }
     }
 
+    // Delete existing strokes that are not in the input strokes
     await tx.stroke.deleteMany({
       where: { id: { notIn: strokes.map((s) => s.id) } },
     });
