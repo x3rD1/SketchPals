@@ -17,6 +17,8 @@ model Canvas {
 model Stroke {
   id        String   @id
   points    Json
+  width     Int      @default(5)
+  color     String   @default("#000000")
   createdAt DateTime @default(now())
   canvasId  String
   canvas    Canvas   @relation(fields: [canvasId], references: [id], onDelete: Cascade)
