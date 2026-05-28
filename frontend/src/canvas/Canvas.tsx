@@ -1,7 +1,11 @@
+import SaveButton from "../components/SaveButton";
 import { useCanvasInteractions } from "./useCanvasInteractions";
 
 function Canvas() {
   const {
+    id,
+    version,
+    setVersion,
     state,
     canvasRef,
     handleMouseDown,
@@ -20,6 +24,15 @@ function Canvas() {
 
   return (
     <>
+      {id && (
+        <SaveButton
+          id={id}
+          strokes={state.history[state.index]}
+          version={version}
+          setVersion={setVersion}
+        />
+      )}
+
       <canvas
         onContextMenu={(e) => e.preventDefault()}
         style={{ border: "1px solid red", cursor: cursorStyle }}
