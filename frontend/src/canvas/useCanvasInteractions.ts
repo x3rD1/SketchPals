@@ -10,12 +10,14 @@ import type {
 } from "./types";
 import { eraserTool, panTool, penTool, selectTool } from "./tools";
 import { deleteSelectedStroke, getSelectionBounds } from "./utils";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createCanvas, getCanvasById } from "../api/canvas";
 
 const HIT_TOLERANCE = 2;
 
 export function useCanvasInteractions() {
-  const [canvasId, setCanvasId] = useState<string | null>(null);
   const [version, setVersion] = useState<number>(0);
+  const hasHydrated = useRef<boolean>(false);
 
   const [state, setState] = useState<State>({ history: [[]], index: 0 });
   const [tool, setTool] = useState<Tool>("pen");
@@ -408,50 +410,56 @@ export function useCanvasInteractions() {
   const { id } = useParams();
   const hasCreatedCanvas = useRef(false); //Prevents double-create on dev
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    // Use existing canvas using id
-    if (id) {
-      const getCanvas = async () => {
-        const res = await fetch(`http://localhost:3000/canvas/${id}`);
+  const { data: queryData } = useQuery({
+    queryKey: ["canvas", id],
+    queryFn: () => getCanvasById(id),
+    enabled: !!id,
+  });
 
-        const data = await res.json();
+  const { mutate } = useMutation({
+    mutationFn: createCanvas,
 
-        setCanvasId(data.id);
-        setVersion(data.version);
-        setState({ history: [data.strokes], index: 0 });
-      };
-
-      getCanvas();
-
-      return;
-    }
-
-    if (hasCreatedCanvas.current) return;
-
-    hasCreatedCanvas.current = true;
-
-    // Create new canvas
-    const createCanvas = async () => {
-      const res = await fetch("http://localhost:3000/canvas", {
-        method: "POST",
-      });
-
-      const data = await res.json();
-
-      setCanvasId(data.id);
+    onSuccess: (data) => {
       setVersion(data.version);
       setState({ history: [data.strokes], index: 0 });
 
       navigate(`/canvas/${data.id}`);
-    };
 
-    createCanvas();
-  }, [id, navigate]);
+      queryClient.invalidateQueries({ queryKey: ["canvas", id] });
+    },
+
+    onError: () => {
+      hasCreatedCanvas.current = false;
+    },
+  });
+
+  // Create canvas if no id
+  useEffect(() => {
+    if (id) return;
+    if (hasCreatedCanvas.current) return;
+
+    hasCreatedCanvas.current = true;
+
+    mutate();
+  }, [id, mutate]);
+
+  // Hydrate local state using query data on first mount only
+  useEffect(() => {
+    if (!queryData) return;
+    if (hasHydrated.current) return;
+
+    hasHydrated.current = true;
+
+    setVersion(queryData.version);
+    setState({ history: [queryData.strokes], index: 0 });
+  }, [queryData]);
 
   return {
-    canvasId,
+    id,
     version,
+    setVersion,
 
     state,
 
