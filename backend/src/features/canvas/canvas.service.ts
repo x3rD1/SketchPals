@@ -75,9 +75,9 @@ export const updateCanvas = async ({
       }
     }
 
-    // Delete existing strokes that are not in the input strokes
+    // Delete existing strokes that belongs to canvasId and are not in the input strokes
     await tx.stroke.deleteMany({
-      where: { id: { notIn: strokes.map((s) => s.id) } },
+      where: { canvasId: id, id: { notIn: strokes.map((s) => s.id) } },
     });
 
     return tx.canvas.update({
