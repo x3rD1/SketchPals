@@ -1,16 +1,17 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 
 export default function useCanvas2D() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
 
-  // Start the canvas element
-  useEffect(() => {
+  const generateThumbnail = () => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
 
-    ctxRef.current = canvas.getContext("2d");
-  }, []);
+    if (!canvas) {
+      throw new Error("Canvas not initialized");
+    }
 
-  return canvasRef;
+    return canvas.toDataURL("image/webp", 0.8);
+  };
+
+  return { canvasRef, generateThumbnail };
 }
