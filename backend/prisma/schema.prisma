@@ -7,19 +7,28 @@ datasource db {
 }
 
 model Canvas {
-  id      String   @id @default(uuid())
-  strokes Stroke[]
-  version Int      @default(0)
+  id        String   @id @default(uuid())
+
+  title     String
+  thumbnail String
+
+  strokes   Stroke[]
+  version   Int      @default(0)
+
+  createdAt DateTime @default(now())
 
   @@map("canvas")
 }
 
 model Stroke {
   id        String   @id
+
   points    Json
   width     Int      @default(5)
   color     String   @default("#000000")
+
   createdAt DateTime @default(now())
+  
   canvasId  String
   canvas    Canvas   @relation(fields: [canvasId], references: [id], onDelete: Cascade)
 
