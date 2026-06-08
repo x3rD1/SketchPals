@@ -1,5 +1,4 @@
 import SaveButton from "./SaveButton";
-// import { useCanvasInteractions } from "../hooks/useCanvasInteractions";
 import useCanvasEngine from "../hooks/useCanvasEngine";
 import useCanvasTools from "../hooks/useCanvasTools";
 
@@ -16,6 +15,7 @@ function Canvas() {
           strokes={engine.history.strokes}
           version={engine.data.version}
           setVersion={engine.data.setVersion}
+          generateThumbnail={engine.canvas2D.generateThumbnail}
         />
       )}
 
@@ -24,7 +24,7 @@ function Canvas() {
         style={{ border: "1px solid red", cursor: tool.cursorStyle }}
         width={500}
         height={500}
-        ref={engine.canvasRef}
+        ref={engine.canvas2D.canvasRef}
         onMouseDown={tool.handleMouseDown}
         onMouseMove={tool.handleMouseMove}
         onMouseUp={tool.handleMouseUp}
