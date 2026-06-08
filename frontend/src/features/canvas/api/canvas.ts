@@ -24,13 +24,14 @@ export const saveCanvas = async (
   id: string,
   strokes: Stroke[],
   version: number,
+  thumbnail: string | undefined,
 ) => {
   const res = await fetch(`http://localhost:3000/canvas/${id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ strokes, version }),
+    body: JSON.stringify({ strokes, version, thumbnail }),
   });
 
   const data = await res.json();
