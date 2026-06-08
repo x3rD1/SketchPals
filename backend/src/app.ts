@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 
 import canvasRouter from "./features/canvas/canvas.router";
+import dashboardRouter from "./features/dashboard/dashboard.router";
 import { errorMiddleware } from "./middlewares/errorMiddleware";
 
 const app = express();
@@ -15,6 +16,7 @@ app.get("/", (req, res) => {
 
 // Routes
 app.use("/canvas", canvasRouter);
+app.use("/dashboard", dashboardRouter);
 
 // Custom Errors
 app.use(errorMiddleware);
