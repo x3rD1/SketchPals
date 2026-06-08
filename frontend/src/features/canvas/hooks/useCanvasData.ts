@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { createCanvas, getCanvasById } from "../api/canvas";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import type { State } from "../types/types";
 
 export default function useCanvasData(
@@ -9,7 +9,6 @@ export default function useCanvasData(
   setState: React.Dispatch<React.SetStateAction<State>>,
 ) {
   const [version, setVersion] = useState<number>(0);
-  const hasCreatedCanvas = useRef(false); //Prevents double-create on dev
 
   const navigate = useNavigate();
 
@@ -28,22 +27,11 @@ export default function useCanvasData(
 
       navigate(`/canvas/${data.id}`);
     },
-
-    onError: () => {
-      hasCreatedCanvas.current = false;
-    },
   });
-
-  const markCanvasAsCreated = () => {
-    hasCreatedCanvas.current = true;
-  };
 
   return {
     version,
     setVersion,
-
-    hasCreatedCanvas,
-    markCanvasAsCreated,
 
     canvasQuery,
     saveMutation,
