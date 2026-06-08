@@ -7,11 +7,33 @@ type SaveButtonProps = {
   strokes: Stroke[];
   version: number;
   setVersion: React.Dispatch<React.SetStateAction<number>>;
+  generateThumbnail: () => string | undefined;
 };
 
-function SaveButton({ id, strokes, version, setVersion }: SaveButtonProps) {
+type SaveCanvasMutationVariables = {
+  id: string;
+  strokes: Stroke[];
+  version: number;
+  thumbnail: string | undefined;
+};
+
+function SaveButton({
+  id,
+  strokes,
+  version,
+  setVersion,
+  generateThumbnail,
+}: SaveButtonProps) {
+  const saveCanvasMutation = ({
+    id,
+    strokes,
+    version,
+    thumbnail,
+  }: SaveCanvasMutationVariables) =>
+    saveCanvas(id, strokes, version, thumbnail);
+
   const { mutate } = useMutation({
-    mutationFn: () => saveCanvas(id, strokes, version),
+    mutationFn: saveCanvasMutation,
 
     onSuccess: (data) => {
       setVersion(data.version);
@@ -21,7 +43,10 @@ function SaveButton({ id, strokes, version, setVersion }: SaveButtonProps) {
   });
 
   const handleSave = () => {
-    mutate();
+    // Creates a thumbnail url on save
+    const thumbnail = generateThumbnail();
+
+    mutate({ id, strokes, version, thumbnail });
   };
 
   return (
