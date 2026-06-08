@@ -44,6 +44,7 @@ export const updateCanvas = async (
       id: req.params.id,
       strokes: req.body.strokes,
       version: req.body.version,
+      thumbnail: req.body.thumbnail,
     };
 
     const updated = await canvasService.updateCanvas(data);

@@ -15,7 +15,7 @@ export const getCanvasById = async (id: string) => {
 
 export const createCanvas = async () => {
   const canvas = await prisma.canvas.create({
-    data: {},
+    data: { title: "Untitled", thumbnail: "https://placehold.co/500x500" },
     include: { strokes: true },
   });
 
@@ -26,10 +26,12 @@ export const updateCanvas = async ({
   id,
   strokes,
   version,
+  thumbnail,
 }: {
   id: string;
   strokes: StrokeInput[];
   version: number;
+  thumbnail: string;
 }) =>
   await prisma.$transaction(async (tx) => {
     const canvas = await tx.canvas.findUnique({ where: { id } });
@@ -82,7 +84,7 @@ export const updateCanvas = async ({
 
     return tx.canvas.update({
       where: { id },
-      data: { version: { increment: 1 } },
+      data: { version: { increment: 1 }, thumbnail },
       include: { strokes: true },
     });
   });
