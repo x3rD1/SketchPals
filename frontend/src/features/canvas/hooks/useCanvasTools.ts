@@ -8,7 +8,7 @@ import { findStrokeId } from "../utils/hitDetection";
 type CanvasEngine = ReturnType<typeof useCanvasEngine>;
 
 export default function useCanvasTools(engine: CanvasEngine) {
-  const { canvasRef, history, stroke, viewport, renderer } = engine;
+  const { canvas2D, history, stroke, viewport, renderer } = engine;
 
   const [tool, setTool] = useState<Tool>("pen");
 
@@ -67,7 +67,7 @@ export default function useCanvasTools(engine: CanvasEngine) {
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.button !== 0) return;
 
-    const point = getMousePos(e, canvasRef, viewport.viewport);
+    const point = getMousePos(e, canvas2D.canvasRef, viewport.viewport);
     if (!point) return;
 
     // Run the logic depending on the tool selected
@@ -75,7 +75,7 @@ export default function useCanvasTools(engine: CanvasEngine) {
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    const point = getMousePos(e, canvasRef, viewport.viewport);
+    const point = getMousePos(e, canvas2D.canvasRef, viewport.viewport);
     if (!point) return;
 
     // Run the logic depending on the tool selected
@@ -83,7 +83,7 @@ export default function useCanvasTools(engine: CanvasEngine) {
   };
 
   const handleMouseUp = (e: React.MouseEvent) => {
-    const point = getMousePos(e, canvasRef, viewport.viewport);
+    const point = getMousePos(e, canvas2D.canvasRef, viewport.viewport);
     if (!point) return;
 
     tools[tool].onMouseUp(point);

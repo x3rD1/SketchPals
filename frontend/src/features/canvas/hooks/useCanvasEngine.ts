@@ -11,32 +11,22 @@ export default function useCanvasEngine() {
   const hasHydrated = useRef<boolean>(false);
   const { id } = useParams();
 
-  const canvasRef = useCanvas2D();
+  const canvas2D = useCanvas2D();
 
   const history = useCanvasHistory();
 
   const stroke = useCanvasStroke();
 
-  const viewport = useCanvasViewport(canvasRef);
+  const viewport = useCanvasViewport(canvas2D.canvasRef);
 
   const renderer = useCanvasRenderer({
-    canvasRef,
+    canvasRef: canvas2D.canvasRef,
     strokes: history.strokes,
     currentStroke: stroke.currentStroke,
     viewport: viewport.viewport,
   });
 
   const data = useCanvasData(id, history.setState);
-
-  // Create canvas if no id
-  useEffect(() => {
-    if (id) return;
-    if (data.hasCreatedCanvas.current) return;
-
-    data.markCanvasAsCreated();
-
-    data.saveMutation.mutate();
-  }, [id, data]);
 
   // Hydrate local state using query data on first mount only
   useEffect(() => {
@@ -55,7 +45,7 @@ export default function useCanvasEngine() {
   return {
     id,
 
-    canvasRef,
+    canvas2D,
 
     data,
     history,
