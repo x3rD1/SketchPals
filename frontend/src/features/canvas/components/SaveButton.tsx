@@ -1,6 +1,5 @@
-import { useMutation } from "@tanstack/react-query";
 import type { Stroke } from "../types/types";
-import { saveCanvas } from "../api/canvas";
+import useSaveCanvas from "../hooks/save/useSaveCanvas";
 
 type SaveButtonProps = {
   id: string;
@@ -10,13 +9,6 @@ type SaveButtonProps = {
   generateThumbnail: () => string | undefined;
 };
 
-type SaveCanvasMutationVariables = {
-  id: string;
-  strokes: Stroke[];
-  version: number;
-  thumbnail: string | undefined;
-};
-
 function SaveButton({
   id,
   strokes,
@@ -24,29 +16,16 @@ function SaveButton({
   setVersion,
   generateThumbnail,
 }: SaveButtonProps) {
-  const saveCanvasMutation = ({
-    id,
-    strokes,
-    version,
-    thumbnail,
-  }: SaveCanvasMutationVariables) =>
-    saveCanvas(id, strokes, version, thumbnail);
-
-  const { mutate } = useMutation({
-    mutationFn: saveCanvasMutation,
-
-    onSuccess: (data) => {
-      setVersion(data.version);
-    },
-
-    onError: (error) => alert(error),
-  });
+  const saveMutation = useSaveCanvas();
 
   const handleSave = () => {
     // Creates a thumbnail url on save
     const thumbnail = generateThumbnail();
 
-    mutate({ id, strokes, version, thumbnail });
+    saveMutation.mutate(
+      { id, strokes, version, thumbnail },
+      { onSuccess: (data) => setVersion(data.version) },
+    );
   };
 
   return (
