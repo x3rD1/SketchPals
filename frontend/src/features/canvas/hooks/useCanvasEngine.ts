@@ -26,7 +26,7 @@ export default function useCanvasEngine() {
     viewport: viewport.viewport,
   });
 
-  const data = useCanvasData(id, history.setState);
+  const data = useCanvasData(id);
 
   // Hydrate local state using query data on first mount only
   useEffect(() => {
