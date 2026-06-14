@@ -1,3 +1,7 @@
+import type useSaveCanvas from "../hooks/save/useSaveCanvas";
+import type useCanvasEngine from "../hooks/useCanvasEngine";
+import type useCanvasTools from "../hooks/useCanvasTools";
+
 export type Point = {
   x: number;
   y: number;
@@ -18,7 +22,7 @@ export type State = {
 };
 
 /********************* TOOLS ************************/
-export type Tool = "pen" | "eraser" | "pan" | "select";
+export type Tool = "Pen" | "Eraser" | "Pan" | "Select";
 
 export type SelectDeps = {
   strokes: CanvasState;
@@ -74,3 +78,9 @@ export type RenderDeps = {
   currentStroke: React.RefObject<Stroke | null>;
   viewport: Viewport;
 };
+
+export type CanvasEngine = ReturnType<typeof useCanvasEngine>;
+
+export type ToolEngine = ReturnType<typeof useCanvasTools>;
+
+export type SaveCanvas = ReturnType<typeof useSaveCanvas>;
