@@ -1,37 +1,22 @@
-import type { Stroke } from "../types/types";
-import useSaveCanvas from "../hooks/save/useSaveCanvas";
+import type { SaveCanvas } from "../types/types";
 
 type SaveButtonProps = {
-  id: string;
-  strokes: Stroke[];
-  version: number;
-  setVersion: React.Dispatch<React.SetStateAction<number>>;
+  save: SaveCanvas;
   generateThumbnail: () => string | undefined;
 };
 
-function SaveButton({
-  id,
-  strokes,
-  version,
-  setVersion,
-  generateThumbnail,
-}: SaveButtonProps) {
-  const saveMutation = useSaveCanvas();
-
+function SaveButton({ save, generateThumbnail }: SaveButtonProps) {
   const handleSave = () => {
     // Creates a thumbnail url on save
     const thumbnail = generateThumbnail();
 
-    saveMutation.mutate(
-      { id, strokes, version, thumbnail },
-      { onSuccess: (data) => setVersion(data.version) },
-    );
+    save.mutate(thumbnail);
   };
 
   return (
-    <div className="styles.saveBtnContainer">
-      <button onClick={handleSave}>Save</button>
-    </div>
+    <button onClick={handleSave} disabled={save.isPending}>
+      Save
+    </button>
   );
 }
 
