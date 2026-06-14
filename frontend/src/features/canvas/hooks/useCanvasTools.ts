@@ -1,16 +1,13 @@
 import { useRef, useState } from "react";
-import type { Point, CanvasState, Tool } from "../types/types";
+import type { Point, CanvasState, Tool, CanvasEngine } from "../types/types";
 import { eraserTool, panTool, penTool, selectTool } from "../tools/tools";
 import { getMousePos } from "../utils/coordinates";
-import useCanvasEngine from "./useCanvasEngine";
 import { findStrokeId } from "../utils/hitDetection";
-
-type CanvasEngine = ReturnType<typeof useCanvasEngine>;
 
 export default function useCanvasTools(engine: CanvasEngine) {
   const { canvas2D, history, stroke, viewport, renderer } = engine;
 
-  const [tool, setTool] = useState<Tool>("pen");
+  const [tool, setTool] = useState<Tool>("Pen");
 
   const [cursorStyle, setCursorStyle] = useState("crosshair");
 
@@ -25,7 +22,7 @@ export default function useCanvasTools(engine: CanvasEngine) {
   const initialMousePosition = useRef<Point>(null);
 
   const tools = {
-    pen: penTool({
+    Pen: penTool({
       redraw: renderer.redraw,
       setState: history.setState,
       isDrawing,
@@ -33,19 +30,19 @@ export default function useCanvasTools(engine: CanvasEngine) {
       color: stroke.color,
       width: stroke.width,
     }),
-    eraser: eraserTool({
+    Eraser: eraserTool({
       strokes: history.strokes,
       findStrokeId,
       setHoveredId: renderer.setHoveredId,
       handleErase: history.handleErase,
     }),
-    pan: panTool({
+    Pan: panTool({
       isPanning,
       viewport: viewport.viewport,
       setViewport: viewport.setViewport,
       initialMousePosition,
     }),
-    select: selectTool({
+    Select: selectTool({
       strokes: history.strokes,
       isDragging,
       dragStart,
@@ -94,22 +91,26 @@ export default function useCanvasTools(engine: CanvasEngine) {
   };
 
   const selectionTool = (newTool: Tool) => {
+    // Update tool state upon selection
     setTool(newTool);
 
+    // Unselect stroke/s upon selection
+    if (newTool !== "Select") renderer.setSelectedIds(new Set());
+
     switch (newTool) {
-      case "pen":
+      case "Pen":
         setCursorStyle("crosshair");
         break;
 
-      case "eraser":
+      case "Eraser":
         setCursorStyle("cell");
         break;
 
-      case "pan":
+      case "Pan":
         setCursorStyle("grab");
         break;
 
-      case "select":
+      case "Select":
         setCursorStyle("pointer");
         break;
 
@@ -120,11 +121,15 @@ export default function useCanvasTools(engine: CanvasEngine) {
   };
 
   return {
+    currentTool: tool,
+
     cursorStyle,
+
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,
     handleMouseLeave,
+
     selectionTool,
   };
 }
