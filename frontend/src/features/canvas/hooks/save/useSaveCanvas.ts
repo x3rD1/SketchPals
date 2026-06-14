@@ -1,37 +1,38 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { saveCanvas } from "../../api/canvas";
-import type { Stroke } from "../../types/types";
+import type { CanvasEngine } from "../../types/types";
+import toast from "react-hot-toast";
 
-type SaveCanvasMutationVariables = {
-  id: string;
-  strokes: Stroke[];
-  version: number;
-  thumbnail: string | undefined;
-};
-
-function useSaveCanvas() {
-  const saveCanvasMutation = ({
-    id,
-    strokes,
-    version,
-    thumbnail,
-  }: SaveCanvasMutationVariables) =>
-    saveCanvas(id, strokes, version, thumbnail);
+function useSaveCanvas(engine: CanvasEngine) {
+  const saveCanvasMutation = (thumbnail: string | undefined) =>
+    saveCanvas(
+      engine.id!,
+      engine.history.strokes,
+      engine.data.version,
+      thumbnail,
+    );
 
   const queryClient = useQueryClient();
   const saveMutation = useMutation({
     mutationFn: saveCanvasMutation,
 
-    onSuccess: (data, variables) => {
+    onMutate: () => toast.loading("Saving...", { id: "save" }),
+
+    onSuccess: (data) => {
       // Update canvasQuery cache immediately on save
-      queryClient.setQueryData(["canvas", variables.id], data);
+      queryClient.setQueryData(["canvas", engine.id], data);
 
       // Invalidate dashboard cache
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+
+      engine.data.setVersion(data.version);
+
+      toast.success("Canvas saved.", { id: "save" });
     },
 
-    onError: (error) => alert(error),
+    onError: () => toast.error("Failed to save.", { id: "save" }),
   });
+
   return saveMutation;
 }
 
