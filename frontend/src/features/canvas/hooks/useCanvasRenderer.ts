@@ -24,7 +24,7 @@ export default function useCanvasRenderer({
 
     // Reset
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.clearRect(0, 0, 500, 500);
+    ctx.clearRect(0, 0, 1280, 720);
 
     // Transform canvas
     ctx.setTransform(
