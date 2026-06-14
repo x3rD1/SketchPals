@@ -1,0 +1,9 @@
+.canvasWrapper {
+  flex: 1;
+
+  display: grid;
+  place-items: center;
+}
+
+.canvas {
+}
