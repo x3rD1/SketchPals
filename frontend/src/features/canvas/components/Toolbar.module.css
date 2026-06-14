@@ -1,0 +1,49 @@
+.center {
+  border: 1px solid green;
+
+  display: grid;
+  place-items: center;
+
+  padding: 1rem;
+}
+
+.toolbar {
+  border: 1px solid red;
+
+  display: flex;
+
+  gap: 6rem;
+  padding: 1rem;
+}
+
+.current_tool {
+  border: 1px solid yellow;
+
+  display: grid;
+  place-items: center;
+
+  min-width: 120px;
+}
+
+.tools {
+  border: 1px solid blue;
+
+  display: flex;
+  align-items: center;
+
+  gap: 2rem;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 0.5rem;
+}
+.buttonGroup button,
+.color input {
+  height: 3rem;
+  width: 3rem;
+
+  border-radius: 50%;
+
+  background-color: white;
+}
