@@ -1,0 +1,8 @@
+.editor {
+  border: 2px solid blueviolet;
+
+  height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+}
