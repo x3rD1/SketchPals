@@ -1,0 +1,60 @@
+.dashboard {
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 700;
+
+  text-align: center;
+
+  padding: 1.5rem 0;
+}
+
+.main {
+  width: 70%;
+  height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+
+  margin: auto;
+
+  /* border: 2px solid blue; */
+}
+
+.createBtn {
+  margin: 2rem 0;
+  padding-left: 1rem;
+}
+.createBtn button {
+  padding: 0.8rem 1.2rem;
+  border-radius: 8px;
+}
+.createBtn button:hover {
+  cursor: pointer;
+}
+
+.emptyState {
+  width: max-content;
+  margin: 16% auto;
+}
+.emptyState h2 {
+  text-align: center;
+  margin-bottom: 0.75rem;
+}
+
+.lists {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+
+  list-style: none;
+
+  gap: 1rem;
+
+  /* border: 1px solid red; */
+  padding: 1rem 1rem 2.5rem 1rem;
+  overflow: scroll;
+  scrollbar-width: none;
+}
