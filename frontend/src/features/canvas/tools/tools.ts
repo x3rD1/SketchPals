@@ -1,4 +1,4 @@
-import { resetSelectionBox } from "../utils/selectionHelpers";
+import { resetSelectionBox } from "../utils/selection";
 import type {
   PenDeps,
   EraserDeps,
@@ -8,12 +8,9 @@ import type {
   State,
   CanvasState,
 } from "../types/types";
-import {
-  didMove,
-  didMoveEnough,
-  getSelectionBounds,
-  getStrokesInsideBox,
-} from "../utils/utils";
+import { didMove, didMoveEnough } from "../utils/movement";
+import { getSelectionBounds } from "../utils/geometry";
+import { getStrokesInsideBox } from "../utils/selection";
 
 export const penTool = ({
   redraw,

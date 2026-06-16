@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { getSelectionBounds } from "../utils/utils";
+import { getSelectionBounds } from "../utils/geometry";
 import type { Point, RenderDeps } from "../types/types";
 
 export default function useCanvasRenderer({
