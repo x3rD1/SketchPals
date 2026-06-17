@@ -11,6 +11,7 @@ import type {
 import { didMove, didMoveEnough } from "../utils/movement";
 import { getSelectionBounds } from "../utils/geometry";
 import { getStrokesInsideBox } from "../utils/selection";
+import simplify from "simplify-js";
 
 export const penTool = ({
   redraw,
@@ -19,6 +20,7 @@ export const penTool = ({
   currentStroke,
   color,
   width,
+  prevPoint,
 }: PenDeps) => ({
   onMouseDown(point: Point) {
     isDrawing.current = true;
@@ -29,17 +31,30 @@ export const penTool = ({
       color,
       width,
     };
+
+    prevPoint.current = point;
   },
   onMouseMove(point: Point) {
     if (!isDrawing.current) return;
 
+    if (!prevPoint.current) return;
+    if (!didMoveEnough(prevPoint.current, point)) return;
+
     currentStroke.current?.points.push(point);
+
+    prevPoint.current = point;
 
     redraw();
   },
   onMouseUp() {
     const stroke = currentStroke.current;
     if (!stroke) return;
+
+    // Run RDP to reduce the number of points in a stroke while retaining its shape.
+    const simplifiedStroke = {
+      ...stroke,
+      points: simplify(stroke.points, 0.5),
+    };
 
     setState((prev) => {
       // Index of the current state in history
@@ -49,7 +64,7 @@ export const penTool = ({
       const newHistory = prev.history.slice(0, currentIndex + 1);
 
       // Create a new state by copying the latest state and adding the current stroke
-      const newState = [...newHistory[newHistory.length - 1], stroke];
+      const newState = [...newHistory[newHistory.length - 1], simplifiedStroke];
 
       // Add the new state to the history
       newHistory.push(newState);

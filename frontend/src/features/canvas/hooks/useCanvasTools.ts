@@ -16,6 +16,8 @@ export default function useCanvasTools(engine: CanvasEngine) {
   const isDragging = useRef(false);
   const isSelectingBox = useRef(false);
 
+  const prevPoint = useRef(null);
+
   const dragStart = useRef<Point | null>(null);
   const initialStateRef = useRef<CanvasState | null>(null);
 
@@ -29,6 +31,7 @@ export default function useCanvasTools(engine: CanvasEngine) {
       currentStroke: stroke.currentStroke,
       color: stroke.color,
       width: stroke.width,
+      prevPoint,
     }),
     Eraser: eraserTool({
       strokes: history.strokes,

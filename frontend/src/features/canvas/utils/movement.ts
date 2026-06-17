@@ -25,7 +25,7 @@ export const didMoveEnough = (start: Point, end: Point) => {
   const dx = end.x - start.x;
   const dy = end.y - start.y;
 
-  const threshold = 5;
+  const threshold = 2;
 
   return Math.abs(dx) > threshold || Math.abs(dy) > threshold;
 };
