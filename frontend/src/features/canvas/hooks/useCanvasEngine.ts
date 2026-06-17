@@ -6,6 +6,7 @@ import useCanvasStroke from "./useCanvasStroke";
 import useCanvasViewport from "./useCanvasViewport";
 import useCanvasData from "./useCanvasData";
 import { useParams } from "react-router-dom";
+import { deserializeStrokes } from "../utils/strokeSerialization";
 
 export default function useCanvasEngine() {
   const hasHydrated = useRef<boolean>(false);
@@ -38,8 +39,13 @@ export default function useCanvasEngine() {
     // Update local version from database
     data.setVersion(data.canvasQuery.data.version);
 
+    // Deserialize stroke.points from number[] to Point[]
+    const deserializedStrokes = deserializeStrokes(
+      data.canvasQuery.data.strokes,
+    );
+
     // Update local history with existing
-    history.setState({ history: [data.canvasQuery.data.strokes], index: 0 });
+    history.setState({ history: [deserializedStrokes], index: 0 });
   }, [data, history]);
 
   return {

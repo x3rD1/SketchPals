@@ -14,6 +14,13 @@ export type Stroke = {
   width: number;
 };
 
+export type SerializedStroke = {
+  id: string;
+  points: number[];
+  color: string;
+  width: number;
+};
+
 export type CanvasState = Stroke[];
 
 export type State = {
@@ -56,6 +63,7 @@ export type PenDeps = {
   currentStroke: React.RefObject<Stroke | null>;
   color: string;
   width: number;
+  prevPoint: React.RefObject<Point | null>;
 };
 
 export type EraserDeps = {
