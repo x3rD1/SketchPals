@@ -1,16 +1,13 @@
-import type { SaveCanvas } from "../types/types";
+import type { AutosaveCanvas, SaveCanvas } from "../types/types";
 
 type SaveButtonProps = {
   save: SaveCanvas;
-  generateThumbnail: () => string | undefined;
+  autosave: AutosaveCanvas;
 };
 
-function SaveButton({ save, generateThumbnail }: SaveButtonProps) {
+function SaveButton({ save, autosave }: SaveButtonProps) {
   const handleSave = () => {
-    // Creates a thumbnail url on save
-    const thumbnail = generateThumbnail();
-
-    save.mutate(thumbnail);
+    autosave.commitSave();
   };
 
   return (

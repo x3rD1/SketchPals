@@ -1,14 +1,24 @@
 import { useRef, useState } from "react";
-import type { Point, CanvasState, Tool, CanvasEngine } from "../types/types";
+import type {
+  Point,
+  CanvasState,
+  Tool,
+  CanvasEngine,
+  AutosaveCanvas,
+} from "../types/types";
 import { eraserTool, panTool, penTool, selectTool } from "../tools/tools";
 import { getMousePos } from "../utils/coordinates";
 import { findStrokeId } from "../utils/hitDetection";
 
 type useCanvasToolsVars = {
   engine: CanvasEngine;
+  autosave: AutosaveCanvas;
 };
 
-export default function useCanvasTools({ engine }: useCanvasToolsVars) {
+export default function useCanvasTools({
+  engine,
+  autosave,
+}: useCanvasToolsVars) {
   const { canvas2D, history, stroke, viewport, renderer, enqueueOp } = engine;
 
   const [tool, setTool] = useState<Tool>("Pen");
@@ -40,6 +50,7 @@ export default function useCanvasTools({ engine }: useCanvasToolsVars) {
       width: stroke.width,
       prevPoint,
       enqueueOp,
+      scheduleAutosave: autosave.scheduleAutosave,
     }),
     Eraser: eraserTool({
       removedId,
@@ -48,6 +59,7 @@ export default function useCanvasTools({ engine }: useCanvasToolsVars) {
       setHoveredId: renderer.setHoveredId,
       handleErase: history.handleErase,
       enqueueOp,
+      scheduleAutosave: autosave.scheduleAutosave,
     }),
     Pan: panTool({
       isPanning,
@@ -73,6 +85,7 @@ export default function useCanvasTools({ engine }: useCanvasToolsVars) {
       isSelectingBox,
       redraw: renderer.redraw,
       enqueueOp,
+      scheduleAutosave: autosave.scheduleAutosave,
     }),
   };
 

@@ -1,3 +1,4 @@
+import type useAutosaveCanvas from "../hooks/save/useAutosaveCanvas";
 import type useSaveCanvas from "../hooks/save/useSaveCanvas";
 import type useCanvasEngine from "../hooks/useCanvasEngine";
 import type useCanvasTools from "../hooks/useCanvasTools";
@@ -28,10 +29,28 @@ export type State = {
   index: number;
 };
 
+type AddOp = {
+  type: "add";
+  strokes: SerializedStroke[];
+};
+
+type MoveOp = {
+  type: "move";
+  strokes: SerializedStroke[];
+};
+
+type DeleteOp = {
+  type: "delete";
+  ids: string[];
+};
+
+export type CanvasOp = AddOp | MoveOp | DeleteOp;
+
 /********************* TOOLS ************************/
 export type Tool = "Pen" | "Eraser" | "Pan" | "Select";
 
 export type SelectDeps = {
+  movedStrokes: React.RefObject<Stroke[]>;
   strokes: CanvasState;
   isDragging: React.RefObject<boolean>;
   dragStart: React.RefObject<Point | null>;
@@ -47,6 +66,8 @@ export type SelectDeps = {
   endPointRef: React.RefObject<Point | null>;
   isSelectingBox: React.RefObject<boolean>;
   redraw: () => void;
+  enqueueOp: (op: CanvasOp) => void;
+  scheduleAutosave: () => void;
 };
 
 export type PanDeps = {
@@ -64,13 +85,18 @@ export type PenDeps = {
   color: string;
   width: number;
   prevPoint: React.RefObject<Point | null>;
+  enqueueOp: (op: CanvasOp) => void;
+  scheduleAutosave: () => void;
 };
 
 export type EraserDeps = {
+  removedId: React.RefObject<string[]>;
   strokes: CanvasState;
   findStrokeId: (mouse: Point, strokes: CanvasState) => string | null;
   setHoveredId: React.Dispatch<React.SetStateAction<string | null>>;
   handleErase: (idToRemove: string) => void;
+  enqueueOp: (op: CanvasOp) => void;
+  scheduleAutosave: () => void;
 };
 
 export type Viewport = {
@@ -92,3 +118,5 @@ export type CanvasEngine = ReturnType<typeof useCanvasEngine>;
 export type ToolEngine = ReturnType<typeof useCanvasTools>;
 
 export type SaveCanvas = ReturnType<typeof useSaveCanvas>;
+
+export type AutosaveCanvas = ReturnType<typeof useAutosaveCanvas>;

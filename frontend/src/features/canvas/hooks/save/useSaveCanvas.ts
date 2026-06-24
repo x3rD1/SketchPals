@@ -1,15 +1,16 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { saveCanvas } from "../../api/canvas";
-import type { CanvasEngine } from "../../types/types";
+import type { CanvasEngine, CanvasOp } from "../../types/types";
 import toast from "react-hot-toast";
-import { serializeStrokes } from "../../utils/strokeSerialization";
+
+type SaveCanvasVars = {
+  ops: CanvasOp[];
+  thumbnail?: string;
+};
 
 function useSaveCanvas(engine: CanvasEngine) {
-  // Convert stroke points from [{x,y}] to [x,y]
-  const serializedStrokes = serializeStrokes(engine.history.strokes);
-
-  const saveCanvasMutation = (thumbnail: string | undefined) =>
-    saveCanvas(engine.id!, serializedStrokes, engine.data.version, thumbnail);
+  const saveCanvasMutation = ({ ops, thumbnail }: SaveCanvasVars) =>
+    saveCanvas(engine.id!, ops, engine.data.version, thumbnail);
 
   const queryClient = useQueryClient();
   const saveMutation = useMutation({
@@ -29,7 +30,7 @@ function useSaveCanvas(engine: CanvasEngine) {
       toast.success("Canvas saved.", { id: "save" });
     },
 
-    onError: () => toast.error("Failed to save.", { id: "save" }),
+    onError: () => toast.error("Failed to save.", { id: "save" }), // add retry after x seconds
   });
 
   return saveMutation;

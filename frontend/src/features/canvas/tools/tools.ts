@@ -7,11 +7,13 @@ import type {
   SelectDeps,
   State,
   CanvasState,
+  CanvasOp,
 } from "../types/types";
 import { didMove, didMoveEnough } from "../utils/movement";
 import { getSelectionBounds } from "../utils/geometry";
 import { getStrokesInsideBox } from "../utils/selection";
 import simplify from "simplify-js";
+import { serializeStroke } from "../utils/strokeSerialization";
 
 export const penTool = ({
   redraw,
@@ -21,6 +23,8 @@ export const penTool = ({
   color,
   width,
   prevPoint,
+  enqueueOp,
+  scheduleAutosave,
 }: PenDeps) => ({
   onMouseDown(point: Point) {
     isDrawing.current = true;
@@ -56,6 +60,7 @@ export const penTool = ({
       points: simplify(stroke.points, 0.5),
     };
 
+    // Create new history item it then triggers a redraw
     setState((prev) => {
       // Index of the current state in history
       const currentIndex = prev.index;
@@ -75,16 +80,28 @@ export const penTool = ({
       };
     });
 
+    // Create an operation
+    const op = {
+      type: "add",
+      strokes: [serializeStroke(simplifiedStroke)],
+    } satisfies CanvasOp;
+    // Enqueue the operation
+    enqueueOp(op);
+    scheduleAutosave();
+
     currentStroke.current = null; // Resets the current stroke so the future point will not connect to the previous point
     isDrawing.current = false;
   },
 });
 
 export const eraserTool = ({
+  removedId,
   strokes,
   findStrokeId,
   setHoveredId,
   handleErase,
+  enqueueOp,
+  scheduleAutosave,
 }: EraserDeps) => ({
   onMouseDown(point: Point) {
     const idToRemove = findStrokeId(point, strokes);
@@ -92,6 +109,8 @@ export const eraserTool = ({
 
     handleErase(idToRemove);
     setHoveredId(null);
+
+    removedId.current.push(idToRemove);
   },
   onMouseMove(point: Point, { isDrawing }: { isDrawing: boolean }) {
     const index = findStrokeId(point, strokes);
@@ -99,11 +118,24 @@ export const eraserTool = ({
     if (isDrawing && index !== null) {
       handleErase(index);
       setHoveredId(null);
+      removedId.current.push(index);
     } else {
       setHoveredId(index);
     }
   },
-  onMouseUp() {},
+  onMouseUp() {
+    // Create an idToRemoveRef
+    const idToRemove = removedId.current;
+
+    if (idToRemove.length === 0) return;
+
+    const op = { type: "delete", ids: idToRemove } satisfies CanvasOp;
+    enqueueOp(op);
+
+    scheduleAutosave();
+
+    removedId.current = [];
+  },
 });
 
 export const panTool = ({
@@ -226,6 +258,7 @@ const handleDragMouseUp = ({
 };
 
 export const selectTool = ({
+  movedStrokes,
   strokes,
   isDragging,
   dragStart,
@@ -241,6 +274,8 @@ export const selectTool = ({
   endPointRef,
   isSelectingBox,
   redraw,
+  enqueueOp,
+  scheduleAutosave,
 }: SelectDeps) => ({
   onMouseDown(point: Point) {
     const id = findStrokeId(point, strokes);
@@ -278,6 +313,8 @@ export const selectTool = ({
     const index = findStrokeId(point, strokes);
 
     if (isDragging.current && dragStart.current !== null) {
+      if (!initialStateRef.current) return;
+
       setCursorStyle("grabbing");
 
       // Calculate distance between dragStart and mouse position in world coords
@@ -305,6 +342,11 @@ export const selectTool = ({
             })),
           };
         });
+
+        // this is temporary and doesnt belong here but it works
+        movedStrokes.current = updatedState.filter((stroke) =>
+          selectedIdsRef.current.has(stroke.id),
+        );
 
         history[currentIndex] = updatedState; // Mutate the history's current state
 
@@ -349,5 +391,21 @@ export const selectTool = ({
         setState,
       });
     }
+
+    // Create an update stroke op
+    const moved = movedStrokes.current;
+
+    // Return early if moved array is empty
+    if (moved.length === 0) return;
+
+    const op = {
+      type: "move",
+      strokes: moved.map((stroke) => serializeStroke(stroke)),
+    } satisfies CanvasOp;
+    enqueueOp(op);
+
+    scheduleAutosave();
+
+    movedStrokes.current = [];
   },
 });

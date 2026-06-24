@@ -1,4 +1,9 @@
-import type { CanvasEngine, SaveCanvas, ToolEngine } from "../types/types";
+import type {
+  AutosaveCanvas,
+  CanvasEngine,
+  SaveCanvas,
+  ToolEngine,
+} from "../types/types";
 import SaveButton from "./SaveButton";
 import styles from "./Toolbar.module.css";
 
@@ -6,9 +11,10 @@ type ToolbarProps = {
   engine: CanvasEngine;
   tool: ToolEngine;
   save: SaveCanvas;
+  autosave: AutosaveCanvas;
 };
 
-function Toolbar({ engine, tool, save }: ToolbarProps) {
+function Toolbar({ engine, tool, save, autosave }: ToolbarProps) {
   return (
     <div className={styles.center}>
       <div className={styles.toolbar}>
@@ -54,10 +60,7 @@ function Toolbar({ engine, tool, save }: ToolbarProps) {
           </div>
 
           <div className={`${styles.save} ${styles.buttonGroup}`}>
-            <SaveButton
-              save={save}
-              generateThumbnail={engine.canvas2D.generateThumbnail}
-            />
+            <SaveButton save={save} autosave={autosave} />
           </div>
         </div>
       </div>
