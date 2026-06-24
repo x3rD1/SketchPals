@@ -42,7 +42,7 @@ export const updateCanvas = async (
   try {
     const data = {
       id: req.params.id,
-      strokes: req.body.strokes,
+      ops: req.body.ops,
       version: req.body.version,
       thumbnail: req.body.thumbnail,
     };
