@@ -4,8 +4,12 @@ import { eraserTool, panTool, penTool, selectTool } from "../tools/tools";
 import { getMousePos } from "../utils/coordinates";
 import { findStrokeId } from "../utils/hitDetection";
 
-export default function useCanvasTools(engine: CanvasEngine) {
-  const { canvas2D, history, stroke, viewport, renderer } = engine;
+type useCanvasToolsVars = {
+  engine: CanvasEngine;
+};
+
+export default function useCanvasTools({ engine }: useCanvasToolsVars) {
+  const { canvas2D, history, stroke, viewport, renderer, enqueueOp } = engine;
 
   const [tool, setTool] = useState<Tool>("Pen");
 
@@ -15,6 +19,9 @@ export default function useCanvasTools(engine: CanvasEngine) {
   const isPanning = useRef(false);
   const isDragging = useRef(false);
   const isSelectingBox = useRef(false);
+  const movedStrokes = useRef([]);
+
+  const removedId = useRef<string[]>([]);
 
   const prevPoint = useRef(null);
 
@@ -32,12 +39,15 @@ export default function useCanvasTools(engine: CanvasEngine) {
       color: stroke.color,
       width: stroke.width,
       prevPoint,
+      enqueueOp,
     }),
     Eraser: eraserTool({
+      removedId,
       strokes: history.strokes,
       findStrokeId,
       setHoveredId: renderer.setHoveredId,
       handleErase: history.handleErase,
+      enqueueOp,
     }),
     Pan: panTool({
       isPanning,
@@ -46,6 +56,7 @@ export default function useCanvasTools(engine: CanvasEngine) {
       initialMousePosition,
     }),
     Select: selectTool({
+      movedStrokes,
       strokes: history.strokes,
       isDragging,
       dragStart,
@@ -61,6 +72,7 @@ export default function useCanvasTools(engine: CanvasEngine) {
       endPointRef: renderer.endPointRef,
       isSelectingBox,
       redraw: renderer.redraw,
+      enqueueOp,
     }),
   };
 

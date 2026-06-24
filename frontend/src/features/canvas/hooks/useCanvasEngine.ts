@@ -7,14 +7,25 @@ import useCanvasViewport from "./useCanvasViewport";
 import useCanvasData from "./useCanvasData";
 import { useParams } from "react-router-dom";
 import { deserializeStrokes } from "../utils/strokeSerialization";
+import type { CanvasOp } from "../types/types";
 
 export default function useCanvasEngine() {
   const hasHydrated = useRef<boolean>(false);
+  const canvasOpsQueueRef = useRef<CanvasOp[]>([]);
+
+  const enqueueOp = (op: CanvasOp) => {
+    canvasOpsQueueRef.current.push(op);
+  };
+
+  const drainOps = () => {
+    return canvasOpsQueueRef.current.splice(0);
+  };
+
   const { id } = useParams();
 
   const canvas2D = useCanvas2D();
 
-  const history = useCanvasHistory();
+  const history = useCanvasHistory(enqueueOp);
 
   const stroke = useCanvasStroke();
 
@@ -49,6 +60,9 @@ export default function useCanvasEngine() {
   }, [data, history]);
 
   return {
+    enqueueOp,
+    drainOps,
+
     id,
 
     canvas2D,
