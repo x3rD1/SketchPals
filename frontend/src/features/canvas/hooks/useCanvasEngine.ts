@@ -60,6 +60,7 @@ export default function useCanvasEngine() {
   }, [data, history]);
 
   return {
+    canvasOpsQueueRef,
     enqueueOp,
     drainOps,
 

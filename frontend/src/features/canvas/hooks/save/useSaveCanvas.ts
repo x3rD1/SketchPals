@@ -30,7 +30,16 @@ function useSaveCanvas(engine: CanvasEngine) {
       toast.success("Canvas saved.", { id: "save" });
     },
 
-    onError: () => toast.error("Failed to save.", { id: "save" }), // add retry after x seconds
+    onError: (_, variables) => {
+      const ops = variables.ops;
+
+      // TODO:
+      // Failed save can restore ops in incorrect order if
+      // new ops are queued while request is in-flight.
+      ops.forEach((item) => engine.canvasOpsQueueRef.current.push(item));
+
+      toast.error("Failed to save.", { id: "save" });
+    },
   });
 
   return saveMutation;

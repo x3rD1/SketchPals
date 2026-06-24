@@ -1,6 +1,7 @@
 import { useCallback, useRef } from "react";
 import type { CanvasEngine, SaveCanvas } from "../../types/types";
 import compact from "../../utils/compact";
+import toast from "react-hot-toast";
 
 type useAutosaveCanvasVars = {
   save: SaveCanvas;
@@ -18,9 +19,14 @@ function useAutosaveCanvas({ save, engine }: useAutosaveCanvasVars) {
 
     // Capture a snapshot of engine.canvasOpsQueueRef.current and clear it
     const drainedOps = engine.drainOps();
-    if (drainedOps.length === 0) return;
+    if (drainedOps.length === 0) {
+      toast.success("Canvas is already up to date.");
+      return;
+    }
 
     const compactedOps = compact(drainedOps);
+
+    console.log(compactedOps);
 
     // Creates a thumbnail url on save
     const thumbnail = engine.canvas2D.generateThumbnail();
