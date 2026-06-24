@@ -1,4 +1,4 @@
-import type { SerializedStroke } from "../types/types";
+import type { CanvasOp } from "../types/types";
 
 export const getCanvasById = async (id: string | undefined) => {
   const res = await fetch(`http://localhost:3000/canvas/${id}`);
@@ -22,7 +22,7 @@ export const createCanvas = async () => {
 
 export const saveCanvas = async (
   id: string,
-  strokes: SerializedStroke[],
+  ops: CanvasOp[],
   version: number,
   thumbnail: string | undefined,
 ) => {
@@ -31,7 +31,7 @@ export const saveCanvas = async (
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ strokes, version, thumbnail }),
+    body: JSON.stringify({ ops, version, thumbnail }),
   });
 
   const data = await res.json();
