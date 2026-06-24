@@ -1,4 +1,9 @@
-import type { CanvasState, Point, SerializedStroke } from "../types/types";
+import type {
+  CanvasState,
+  Point,
+  SerializedStroke,
+  Stroke,
+} from "../types/types";
 
 const PRECISION = 100;
 
@@ -14,14 +19,8 @@ const serializePoints = (points: Point[]) => {
   return result;
 };
 
-export const serializeStrokes = (strokes: CanvasState) => {
-  const result: SerializedStroke[] = [];
-
-  for (const stroke of strokes) {
-    result.push({ ...stroke, points: serializePoints(stroke.points) });
-  }
-
-  return result;
+export const serializeStroke = (stroke: Stroke): SerializedStroke => {
+  return { ...stroke, points: serializePoints(stroke.points) };
 };
 
 const deserializePoints = (points: number[]): Point[] => {
