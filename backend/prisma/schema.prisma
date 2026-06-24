@@ -23,7 +23,7 @@ model Canvas {
 model Stroke {
   id        String   @id
 
-  points    Json
+  points    Int[]
   width     Int      @default(5)
   color     String   @default("#000000")
 
