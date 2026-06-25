@@ -1,3 +1,4 @@
+import { Params } from "../canvas/canvas.types";
 import * as dashboardService from "./dashboard.service";
 import { Request, Response, NextFunction } from "express";
 
@@ -10,6 +11,25 @@ export const getAllCanvases = async (
     const canvases = await dashboardService.getAllCanvases();
 
     res.json(canvases);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateCanvasTitle = async (
+  req: Request<Params>,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    console.log(req.body.title);
+    const data = {
+      id: req.params.id,
+      title: req.body.title,
+    };
+    const canvas = await dashboardService.updateCanvasTitle(data);
+
+    res.json(canvas);
   } catch (error) {
     next(error);
   }

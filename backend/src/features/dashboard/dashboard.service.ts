@@ -7,3 +7,15 @@ export const getAllCanvases = async () => {
 
   return canvases;
 };
+
+export const updateCanvasTitle = async (data: {
+  id: string;
+  title: string;
+}) => {
+  const canvas = await prisma.canvas.update({
+    where: { id: data.id },
+    data: { title: data.title },
+  });
+
+  return canvas;
+};
