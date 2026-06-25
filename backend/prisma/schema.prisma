@@ -7,15 +7,17 @@ datasource db {
 }
 
 model Canvas {
-  id        String   @id @default(uuid())
+  id                String   @id @default(uuid())
 
-  title     String
-  thumbnail String
+  title             String
+  thumbnail         String
+  thumbnailPublicId String?
 
-  strokes   Stroke[]
-  version   Int      @default(0)
+  strokes           Stroke[]
+  version           Int      @default(0)
 
-  createdAt DateTime @default(now())
+  createdAt         DateTime @default(now())
+  updateAt          DateTime @updatedAt
 
   @@map("canvas")
 }
