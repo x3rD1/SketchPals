@@ -42,10 +42,12 @@ export const updateCanvas = async (
   try {
     const data = {
       id: req.params.id,
-      ops: req.body.ops,
-      version: req.body.version,
-      thumbnail: req.body.thumbnail,
+      ops: JSON.parse(req.body.ops),
+      version: Number(req.body.version),
+      file: req.file!,
     };
+
+    if (!data.file) throw new AppError("Missing thumbnail", 400);
 
     const updated = await canvasService.updateCanvas(data);
 

@@ -1,3 +1,4 @@
+import cloudinary from "../../config/cloudinary";
 import { prisma } from "../../lib/prisma";
 
 export const getAllCanvases = async () => {
@@ -5,7 +6,16 @@ export const getAllCanvases = async () => {
     orderBy: { createdAt: "desc" },
   });
 
-  return canvases;
+  return canvases.map((c) => ({
+    ...c,
+    thumbnail: cloudinary.url(c.thumbnailPublicId!, {
+      width: 400,
+      height: 250,
+      crop: "fill",
+      quality: "auto",
+      fetch_format: "auto",
+    }),
+  }));
 };
 
 export const updateCanvasTitle = async (data: {

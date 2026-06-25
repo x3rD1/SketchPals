@@ -1,5 +1,7 @@
+import cloudinary from "../../config/cloudinary";
 import { AppError } from "../../errors/appError";
 import { prisma } from "../../lib/prisma";
+import { uploadThumbnail } from "../../lib/uploadThumbnail";
 import { CanvasOp } from "./canvas.types";
 
 export const getCanvasById = async (id: string) => {
@@ -26,12 +28,12 @@ export const updateCanvas = async ({
   id,
   ops,
   version,
-  thumbnail,
+  file,
 }: {
   id: string;
   ops: CanvasOp[];
   version: number;
-  thumbnail: string;
+  file: Express.Multer.File;
 }) =>
   await prisma.$transaction(async (tx) => {
     if (ops.length > 0) {
@@ -81,11 +83,20 @@ export const updateCanvas = async ({
           }
         }
       }
+
+      if (canvas.thumbnailPublicId)
+        await cloudinary.uploader.destroy(canvas.thumbnailPublicId);
     }
+
+    const uploadResult = await uploadThumbnail(file);
 
     return tx.canvas.update({
       where: { id },
-      data: { version: { increment: 1 }, thumbnail },
+      data: {
+        version: { increment: 1 },
+        thumbnail: uploadResult.secure_url,
+        thumbnailPublicId: uploadResult.public_id,
+      },
       include: { strokes: true },
     });
   });
