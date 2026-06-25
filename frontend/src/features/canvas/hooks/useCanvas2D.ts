@@ -3,15 +3,20 @@ import { useRef } from "react";
 export default function useCanvas2D() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  const generateThumbnail = () => {
-    const canvas = canvasRef.current;
+  const getThumbnailBlob = () =>
+    new Promise<Blob>((resolve, reject) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
 
-    if (!canvas) {
-      throw new Error("Canvas not initialized");
-    }
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) return reject("No blob");
+          resolve(blob);
+        },
+        "image/webp",
+        0.8,
+      );
+    });
 
-    return canvas.toDataURL("image/webp", 0.8);
-  };
-
-  return { canvasRef, generateThumbnail };
+  return { canvasRef, getThumbnailBlob };
 }

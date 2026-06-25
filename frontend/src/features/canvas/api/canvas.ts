@@ -1,5 +1,3 @@
-import type { CanvasOp } from "../types/types";
-
 export const getCanvasById = async (id: string | undefined) => {
   const res = await fetch(`http://localhost:3000/canvas/${id}`);
 
@@ -20,18 +18,10 @@ export const createCanvas = async () => {
   return data;
 };
 
-export const saveCanvas = async (
-  id: string,
-  ops: CanvasOp[],
-  version: number,
-  thumbnail: string | undefined,
-) => {
+export const saveCanvas = async (id: string, formData: FormData) => {
   const res = await fetch(`http://localhost:3000/canvas/${id}`, {
     method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ ops, version, thumbnail }),
+    body: formData,
   });
 
   const data = await res.json();

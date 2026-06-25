@@ -5,12 +5,19 @@ import toast from "react-hot-toast";
 
 type SaveCanvasVars = {
   ops: CanvasOp[];
-  thumbnail?: string;
 };
 
 function useSaveCanvas(engine: CanvasEngine) {
-  const saveCanvasMutation = ({ ops, thumbnail }: SaveCanvasVars) =>
-    saveCanvas(engine.id!, ops, engine.data.version, thumbnail);
+  const saveCanvasMutation = async ({ ops }: SaveCanvasVars) => {
+    const blob = await engine.canvas2D.getThumbnailBlob();
+
+    const formData = new FormData();
+    formData.append("image", blob, "thumbnail.webp");
+    formData.append("ops", JSON.stringify(ops));
+    formData.append("version", String(engine.data.version));
+
+    return saveCanvas(engine.id!, formData);
+  };
 
   const queryClient = useQueryClient();
   const saveMutation = useMutation({

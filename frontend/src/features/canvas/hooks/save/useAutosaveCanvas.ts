@@ -28,10 +28,7 @@ function useAutosaveCanvas({ save, engine }: useAutosaveCanvasVars) {
 
     console.log(compactedOps);
 
-    // Creates a thumbnail url on save
-    const thumbnail = engine.canvas2D.generateThumbnail();
-
-    save.mutate({ ops: compactedOps, thumbnail });
+    save.mutate({ ops: compactedOps });
   }, [save, engine]);
 
   const scheduleAutosave = useCallback(() => {
