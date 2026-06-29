@@ -10,9 +10,11 @@ export const getCanvasById = async (
 ) => {
   try {
     const { id } = req.params;
+    const userId = req.user.id;
+
     if (!id) throw new AppError("Invalid or Missing id", 400);
 
-    const canvas = await canvasService.getCanvasById(id);
+    const canvas = await canvasService.getCanvasById(id, userId);
 
     res.json(canvas);
   } catch (error) {
@@ -26,7 +28,9 @@ export const createCanvas = async (
   next: NextFunction,
 ) => {
   try {
-    const canvas = await canvasService.createCanvas();
+    const userId = req.user.id;
+
+    const canvas = await canvasService.createCanvas(userId);
 
     res.status(201).json(canvas);
   } catch (error) {
@@ -45,6 +49,7 @@ export const updateCanvas = async (
       ops: JSON.parse(req.body.ops),
       version: Number(req.body.version),
       file: req.file!,
+      userId: req.user.id,
     };
 
     if (!data.file) throw new AppError("Missing thumbnail", 400);

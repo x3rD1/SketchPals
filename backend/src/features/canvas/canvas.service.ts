@@ -4,9 +4,9 @@ import { prisma } from "../../lib/prisma";
 import { uploadThumbnail } from "../../lib/uploadThumbnail";
 import { CanvasOp } from "./canvas.types";
 
-export const getCanvasById = async (id: string) => {
+export const getCanvasById = async (id: string, userId: string) => {
   const canvas = await prisma.canvas.findUnique({
-    where: { id },
+    where: { id, userId },
     include: { strokes: true },
   });
 
@@ -15,9 +15,13 @@ export const getCanvasById = async (id: string) => {
   return canvas;
 };
 
-export const createCanvas = async () => {
+export const createCanvas = async (userId: string) => {
   const canvas = await prisma.canvas.create({
-    data: { title: "Untitled", thumbnail: "https://placehold.co/500x500" },
+    data: {
+      userId,
+      title: "Untitled",
+      thumbnail: "https://placehold.co/500x500",
+    },
     include: { strokes: true },
   });
 
@@ -29,15 +33,17 @@ export const updateCanvas = async ({
   ops,
   version,
   file,
+  userId,
 }: {
   id: string;
   ops: CanvasOp[];
   version: number;
   file: Express.Multer.File;
+  userId: string;
 }) =>
   await prisma.$transaction(async (tx) => {
     if (ops.length > 0) {
-      const canvas = await tx.canvas.findUnique({ where: { id } });
+      const canvas = await tx.canvas.findUnique({ where: { id, userId } });
       if (!canvas)
         throw new AppError("Canvas not found", 404, "CANVAS_NOT_FOUND");
 
@@ -91,7 +97,7 @@ export const updateCanvas = async ({
     const uploadResult = await uploadThumbnail(file);
 
     return tx.canvas.update({
-      where: { id },
+      where: { id, userId },
       data: {
         version: { increment: 1 },
         thumbnail: uploadResult.secure_url,

@@ -8,7 +8,9 @@ export const getAllCanvases = async (
   next: NextFunction,
 ) => {
   try {
-    const canvases = await dashboardService.getAllCanvases();
+    const userId = req.user.id;
+
+    const canvases = await dashboardService.getAllCanvases(userId);
 
     res.json(canvases);
   } catch (error) {
@@ -26,6 +28,7 @@ export const updateCanvasTitle = async (
     const data = {
       id: req.params.id,
       title: req.body.title,
+      userId: req.user.id,
     };
     const canvas = await dashboardService.updateCanvasTitle(data);
 

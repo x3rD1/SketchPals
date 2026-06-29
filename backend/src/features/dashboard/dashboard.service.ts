@@ -1,8 +1,9 @@
 import cloudinary from "../../config/cloudinary";
 import { prisma } from "../../lib/prisma";
 
-export const getAllCanvases = async () => {
+export const getAllCanvases = async (userId: string) => {
   const canvases = await prisma.canvas.findMany({
+    where: { userId },
     orderBy: { createdAt: "desc" },
   });
 
@@ -21,9 +22,10 @@ export const getAllCanvases = async () => {
 export const updateCanvasTitle = async (data: {
   id: string;
   title: string;
+  userId: string;
 }) => {
   const canvas = await prisma.canvas.update({
-    where: { id: data.id },
+    where: { id: data.id, userId: data.userId },
     data: { title: data.title },
   });
 
