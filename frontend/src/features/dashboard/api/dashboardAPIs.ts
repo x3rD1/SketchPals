@@ -1,7 +1,9 @@
 import type { Canvas } from "../types/types";
 
 export const getAllCanvases = async (): Promise<Canvas[]> => {
-  const res = await fetch("http://localhost:3000/dashboard");
+  const res = await fetch("http://localhost:3000/dashboard", {
+    credentials: "include",
+  });
 
   const data = await res.json();
 
@@ -19,6 +21,7 @@ export const updateCanvasTitle = async (
     headers: {
       "Content-Type": "application/json",
     },
+    credentials: "include",
     body: JSON.stringify({ title }),
   });
 
