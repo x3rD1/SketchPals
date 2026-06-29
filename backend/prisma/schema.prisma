@@ -6,6 +6,19 @@ datasource db {
   provider = "postgresql"
 }
 
+model User {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  name      String
+  googleId  String    @unique
+
+  canvas    Canvas[]
+
+  createdAt DateTime  @default(now())
+
+  @@map("users")
+}
+
 model Canvas {
   id                String   @id @default(uuid())
 
@@ -15,6 +28,9 @@ model Canvas {
 
   strokes           Stroke[]
   version           Int      @default(0)
+
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId            String
 
   createdAt         DateTime @default(now())
   updateAt          DateTime @updatedAt
