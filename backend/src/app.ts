@@ -1,22 +1,34 @@
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 
 import canvasRouter from "./features/canvas/canvas.router";
 import dashboardRouter from "./features/dashboard/dashboard.router";
+import authRouter from "./features/auth/auth.router";
+import { requireAuth } from "./features/auth/requireAuth";
+
 import { errorMiddleware } from "./middlewares/errorMiddleware";
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  }),
+);
 app.use(express.json());
+app.use(cookieParser());
 
 app.get("/", (req, res) => {
   res.send("API is running!");
 });
 
 // Routes
-app.use("/canvas", canvasRouter);
-app.use("/dashboard", dashboardRouter);
+app.use("/auth", authRouter);
+app.use("/dashboard", requireAuth, dashboardRouter);
+app.use("/canvas", requireAuth, canvasRouter);
 
 // Custom Errors
 app.use(errorMiddleware);
