@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { AppError } from "../../errors/appError";
 import { AuthUser } from "./auth.type";
 import { prisma } from "../../lib/prisma";
 
@@ -9,29 +8,30 @@ export const requireAuth = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const token = req.cookies?.token;
+  const token = req.cookies?.accessToken;
 
-  if (!token) return res.status(401).json({ error: "No token" });
+  if (!token) return res.status(401).json({ error: "Unauthorized" });
 
-  const secret = process.env.JWT_SECRET;
+  const access = process.env.JWT_ACCESS_TOKEN;
 
-  if (!secret) {
-    throw new AppError("JWT_SECRET is missing in environment variables", 500);
+  if (!access) {
+    console.error("JWT_ACCESS_TOKEN missing");
+    return res.status(500).json({ error: "Server misconfigured" });
   }
 
   try {
-    const payload = jwt.verify(token, secret) as AuthUser;
+    const payload = jwt.verify(token, access) as AuthUser;
 
     const user = await prisma.user.findUnique({
       where: { id: payload.userId },
     });
 
-    if (!user) throw new AppError("Invalid token", 401);
+    if (!user) return res.status(401).json({ error: "Unauthorized" });
 
     req.user = user;
 
     next();
   } catch {
-    return res.status(401).json({ error: "Invalid token" });
+    return res.status(401).json({ error: "Unauthorized" });
   }
 };
