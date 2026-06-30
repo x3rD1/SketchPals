@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import type { CanvasEngine, SaveCanvas } from "../../types/types";
 import compact from "../../utils/compact";
 import toast from "react-hot-toast";
@@ -40,6 +40,14 @@ function useAutosaveCanvas({ save, engine }: useAutosaveCanvasVars) {
       commitSave();
     }, 5000);
   }, [commitSave]);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [timeoutRef]);
 
   return { scheduleAutosave, commitSave };
 }
