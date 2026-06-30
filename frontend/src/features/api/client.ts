@@ -1,5 +1,7 @@
 const BASE_URL = import.meta.env.VITE_API_URL;
 
+let refreshPromise: Promise<Response> | null = null;
+
 function buildOptions(
   method: string,
   data: BodyInit | null | undefined,
@@ -20,12 +22,18 @@ async function request(url: string, options = {}) {
   });
 
   if (res.status === 401) {
-    const refresh = await fetch(`${BASE_URL}/auth/refresh`, {
-      method: "POST",
-      credentials: "include",
-    });
+    if (!refreshPromise) {
+      refreshPromise = fetch(`${BASE_URL}/auth/refresh`, {
+        method: "POST",
+        credentials: "include",
+      });
+    }
+
+    const refresh = await refreshPromise;
 
     if (!refresh.ok) throw new Error("Unauthorized");
+
+    refreshPromise = null;
 
     res = await fetch(`${BASE_URL}${url}`, {
       ...options,
