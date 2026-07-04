@@ -15,6 +15,11 @@ function CanvasEditor() {
 
   const tool = useCanvasTools({ engine, autosave });
 
+  if (engine.data.canvasQuery.isPending) return <div>Loading...</div>;
+
+  if (engine.data.canvasQuery.isError)
+    return <div>{engine.data.canvasQuery.error.message}</div>;
+
   return (
     <div className={styles.editor}>
       <Toolbar engine={engine} tool={tool} save={save} autosave={autosave} />
