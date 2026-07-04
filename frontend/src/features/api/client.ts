@@ -1,16 +1,17 @@
 const BASE_URL = import.meta.env.VITE_API_URL;
+type JsonBody = Record<string, unknown>;
 
 let refreshPromise: Promise<Response> | null = null;
 
 function buildOptions(
   method: string,
-  data: BodyInit | null | undefined,
+  data: FormData | JsonBody | object = {},
 ): RequestInit {
   const isFormData = data instanceof FormData;
 
   return {
     method,
-    body: isFormData ? data : JSON.stringify({ title: data }),
+    body: isFormData ? data : JSON.stringify(data),
     headers: isFormData ? undefined : { "Content-Type": "application/json" },
   };
 }
@@ -41,12 +42,23 @@ async function request(url: string, options = {}) {
     });
   }
 
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.message);
+  }
+
+  if (res.status === 204) {
+    return null;
+  }
+
   return res.json();
 }
 
 export const api = {
   get: (url: string) => request(url, { method: "GET" }),
-  post: (url: string) => request(url, { method: "POST" }),
-  patch: (url: string, data: BodyInit | null | undefined) =>
+  post: (url: string, data: JsonBody | object = {}) =>
+    request(url, buildOptions("POST", data)),
+  patch: (url: string, data: FormData | JsonBody) =>
     request(url, buildOptions("PATCH", data)),
+  delete: (url: string) => request(url, { method: "DELETE" }),
 };
