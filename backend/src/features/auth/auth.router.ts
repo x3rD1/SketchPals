@@ -31,7 +31,7 @@ router.post("/google", async (req, res) => {
 
   if (!user) {
     user = await prisma.user.create({
-      data: { email, name, googleId: sub },
+      data: { email, username: name, googleId: sub },
     });
   }
 
@@ -107,6 +107,13 @@ router.post("/refresh", async (req, res) => {
   } catch (error) {
     return res.status(401).json({ error: "Invalid token" });
   }
+});
+
+router.post("/logout", requireAuth, async (req, res) => {
+  res.clearCookie("accessToken");
+  res.clearCookie("refreshToken");
+
+  return res.status(200).json({ message: "Logged out" });
 });
 
 export default router;
