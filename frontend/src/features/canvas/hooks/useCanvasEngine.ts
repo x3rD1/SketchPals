@@ -10,6 +10,12 @@ import { deserializeStrokes } from "../utils/strokeSerialization";
 import type { CanvasOp } from "../types/types";
 
 export default function useCanvasEngine() {
+  const { id } = useParams();
+
+  if (!id) {
+    throw new Error("Missing canvas id");
+  }
+
   const hasHydrated = useRef<boolean>(false);
   const canvasOpsQueueRef = useRef<CanvasOp[]>([]);
 
@@ -20,8 +26,6 @@ export default function useCanvasEngine() {
   const drainOps = () => {
     return canvasOpsQueueRef.current.splice(0);
   };
-
-  const { id } = useParams();
 
   const canvas2D = useCanvas2D();
 
