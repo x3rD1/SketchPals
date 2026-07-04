@@ -7,16 +7,31 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(uuid())
-  email     String    @unique
-  name      String
-  googleId  String    @unique
+  id              String              @id @default(uuid())
+  email           String              @unique
+  username        String              
+  googleId        String              @unique
 
-  canvas    Canvas[]
+  canvas          Canvas[]
 
-  createdAt DateTime  @default(now())
+  sharedCanvases  CanvasPermission[]  
+
+  createdAt       DateTime            @default(now())
 
   @@map("users")
+}
+
+model CanvasPermission {
+  id        Int     @id @default(autoincrement())
+
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+
+  canvas    Canvas  @relation(fields: [canvasId], references: [id], onDelete: Cascade)
+  canvasId  String
+
+  @@map("canvasPermissions")
+  @@unique([userId, canvasId])
 }
 
 model Canvas {
@@ -31,6 +46,8 @@ model Canvas {
 
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId            String
+
+  sharedWith        CanvasPermission[]
 
   createdAt         DateTime @default(now())
   updateAt          DateTime @updatedAt
