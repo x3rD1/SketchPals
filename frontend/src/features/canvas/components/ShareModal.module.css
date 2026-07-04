@@ -1,0 +1,46 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.modal {
+  height: 500px;
+  width: 600px;
+  max-width: 90vw;
+
+  padding: 24px;
+
+  background: white;
+  border-radius: 12px;
+
+  position: relative;
+}
+
+.search {
+  display: flex;
+  flex-direction: column;
+
+  padding: 10px 48px;
+}
+.search input {
+  border-radius: 1rem;
+  padding: 4px;
+}
+
+.lists {
+  border: 2px solid black;
+}
+
+.closeBtn {
+  position: absolute;
+
+  top: 3%;
+  right: 3%;
+}

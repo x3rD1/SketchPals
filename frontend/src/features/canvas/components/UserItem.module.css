@@ -1,0 +1,7 @@
+.item {
+  display: flex;
+  list-style: none;
+  border: 2px solid rgb(0, 38, 255);
+
+  cursor: pointer;
+}

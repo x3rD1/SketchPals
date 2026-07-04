@@ -5,6 +5,7 @@ import type {
   ToolEngine,
 } from "../types/types";
 import SaveButton from "./SaveButton";
+import ShareButton from "./ShareButton";
 import styles from "./Toolbar.module.css";
 
 type ToolbarProps = {
@@ -63,6 +64,9 @@ function Toolbar({ engine, tool, save, autosave }: ToolbarProps) {
             <SaveButton save={save} autosave={autosave} />
           </div>
         </div>
+      </div>
+      <div>
+        <ShareButton canvasId={engine.id} />
       </div>
     </div>
   );
