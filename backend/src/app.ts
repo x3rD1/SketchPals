@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import canvasRouter from "./features/canvas/canvas.router";
 import dashboardRouter from "./features/dashboard/dashboard.router";
 import authRouter from "./features/auth/auth.router";
+import userRouter from "./features/users/user.route";
 import { requireAuth } from "./features/auth/requireAuth";
 
 import { errorMiddleware } from "./middlewares/errorMiddleware";
@@ -29,6 +30,7 @@ app.get("/", (req, res) => {
 app.use("/auth", authRouter);
 app.use("/dashboard", requireAuth, dashboardRouter);
 app.use("/canvas", requireAuth, canvasRouter);
+app.use("/users", requireAuth, userRouter);
 
 // Custom Errors
 app.use(errorMiddleware);
