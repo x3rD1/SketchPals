@@ -1,4 +1,5 @@
 import useDashboardData from "../hooks/useDashboardData";
+import useLogout from "../hooks/useLogout";
 import CanvasItem from "./CanvasItem";
 import styles from "./Dashboard.module.css";
 
@@ -6,6 +7,8 @@ function Dashboard() {
   const { canvasesQuery, createCanvasMutation } = useDashboardData();
 
   const handleCreate = () => createCanvasMutation.mutate();
+
+  const handleLogout = useLogout();
 
   const canvasData = canvasesQuery.data ?? [];
 
@@ -31,7 +34,7 @@ function Dashboard() {
   return (
     <div className={styles.dashboard}>
       <h1 className={styles.title}>Dashboard</h1>
-
+      <button onClick={handleLogout}>Logout</button>
       <div className={styles.main}>
         <div className={styles.createBtn}>
           <button onClick={handleCreate}>Start drawing</button>
