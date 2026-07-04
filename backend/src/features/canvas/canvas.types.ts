@@ -11,6 +11,7 @@ export type CanvasState = Stroke[];
 
 export type Params = {
   id: string;
+  userId: string;
 };
 
 type AddOp = {
