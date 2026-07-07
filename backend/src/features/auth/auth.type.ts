@@ -14,6 +14,5 @@ export type User = {
   id: string;
   email: string;
   googleId: string;
-  name: string;
   createdAt: Date;
 };
