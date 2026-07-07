@@ -4,15 +4,32 @@ import { prisma, Prisma } from "../../lib/prisma";
 import { uploadThumbnail } from "../../lib/uploadThumbnail";
 import { CanvasOp } from "./canvas.types";
 
-export const getCanvasById = async (id: string, userId: string) => {
-  const canvas = await prisma.canvas.findUnique({
-    where: { id, userId },
+type DbClient = typeof prisma | Prisma.TransactionClient;
+
+const requireCanvasAccess = async (
+  db: DbClient,
+  canvasId: string,
+  userId: string,
+) => {
+  const canvas = await db.canvas.findFirst({
+    where: {
+      id: canvasId,
+      OR: [{ userId }, { sharedWith: { some: { userId } } }],
+    },
     include: { strokes: true },
   });
 
-  if (!canvas) throw new AppError("Canvas not found", 404, "CANVAS_NOT_FOUND");
+  if (!canvas) throw new Error("Canvas not found");
 
   return canvas;
+};
+
+export const getCanvasById = async (id: string, userId: string) => {
+  const canvas = await requireCanvasAccess(prisma, id, userId);
+
+  const canManage = canvas.userId === userId;
+
+  return { ...canvas, canManage };
 };
 
 export const createCanvas = async (userId: string) => {
@@ -22,7 +39,7 @@ export const createCanvas = async (userId: string) => {
       title: "Untitled",
       thumbnail: "https://placehold.co/500x500",
     },
-    include: { strokes: true },
+    select: { id: true },
   });
 
   return canvas;
@@ -43,9 +60,7 @@ export const updateCanvas = async ({
 }) =>
   await prisma.$transaction(async (tx) => {
     if (ops.length > 0) {
-      const canvas = await tx.canvas.findUnique({ where: { id, userId } });
-      if (!canvas)
-        throw new AppError("Canvas not found", 404, "CANVAS_NOT_FOUND");
+      const canvas = await requireCanvasAccess(tx, id, userId);
 
       if (canvas.version !== version)
         throw new AppError(
@@ -96,8 +111,8 @@ export const updateCanvas = async ({
 
     const uploadResult = await uploadThumbnail(file);
 
-    return tx.canvas.update({
-      where: { id, userId },
+    const updatedCanvas = await tx.canvas.update({
+      where: { id },
       data: {
         version: { increment: 1 },
         thumbnail: uploadResult.secure_url,
@@ -105,6 +120,10 @@ export const updateCanvas = async ({
       },
       include: { strokes: true },
     });
+
+    const canManage = updatedCanvas.userId === userId;
+
+    return { ...updatedCanvas, canManage };
   });
 
 export const getCanvasMembers = async (canvasId: string) => {
