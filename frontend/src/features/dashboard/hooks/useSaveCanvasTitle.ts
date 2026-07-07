@@ -5,8 +5,7 @@ import toast from "react-hot-toast";
 function useSaveCanvasTitle() {
   const queryClient = useQueryClient();
   const save = useMutation({
-    mutationFn: ({ id, title }: { id: string; title: string }) =>
-      updateCanvasTitle(id, title),
+    mutationFn: updateCanvasTitle,
 
     onMutate: () => toast.loading("Updating...", { id: "title" }),
 

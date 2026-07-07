@@ -5,9 +5,16 @@ export const getAllCanvases = async (): Promise<Canvas[]> => {
   return api.get("/dashboard");
 };
 
-export const updateCanvasTitle = async (
-  id: string,
-  title: string,
-): Promise<Canvas> => {
-  return api.patch(`/dashboard/${id}`, title);
+export const updateCanvasTitle = async ({
+  id,
+  title,
+}: {
+  id: string;
+  title: string;
+}): Promise<Canvas> => {
+  return api.patch(`/dashboard/${id}`, { title });
+};
+
+export const getAllSharedCanvases = async (): Promise<Canvas[]> => {
+  return api.get("/dashboard/shared-canvases");
 };
