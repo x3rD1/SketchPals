@@ -6,4 +6,6 @@ const router = Router();
 router.get("/", dashboardController.getAllCanvases);
 router.patch("/:id", dashboardController.updateCanvasTitle);
 
+router.get("/shared-canvases", dashboardController.getAllSharedCanvases);
+
 export default router;

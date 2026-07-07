@@ -24,7 +24,6 @@ export const updateCanvasTitle = async (
   next: NextFunction,
 ) => {
   try {
-    console.log(req.body.title);
     const data = {
       id: req.params.id,
       title: req.body.title,
@@ -33,6 +32,22 @@ export const updateCanvasTitle = async (
     const canvas = await dashboardService.updateCanvasTitle(data);
 
     res.json(canvas);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAllSharedCanvases = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user.id;
+
+    const canvases = await dashboardService.getAllSharedCanvases(userId);
+
+    res.json(canvases);
   } catch (error) {
     next(error);
   }

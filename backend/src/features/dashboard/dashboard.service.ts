@@ -7,16 +7,21 @@ export const getAllCanvases = async (userId: string) => {
     orderBy: { createdAt: "desc" },
   });
 
-  return canvases.map((c) => ({
-    ...c,
-    thumbnail: cloudinary.url(c.thumbnailPublicId!, {
-      width: 400,
-      height: 250,
-      crop: "fill",
-      quality: "auto",
-      fetch_format: "auto",
-    }),
-  }));
+  return canvases.map((c) => {
+    const canManage = c.userId === userId;
+
+    return {
+      ...c,
+      canManage,
+      thumbnail: cloudinary.url(c.thumbnailPublicId!, {
+        width: 400,
+        height: 250,
+        crop: "fill",
+        quality: "auto",
+        fetch_format: "auto",
+      }),
+    };
+  });
 };
 
 export const updateCanvasTitle = async (data: {
@@ -30,4 +35,16 @@ export const updateCanvasTitle = async (data: {
   });
 
   return canvas;
+};
+
+export const getAllSharedCanvases = async (userId: string) => {
+  const canvases = await prisma.canvas.findMany({
+    where: { sharedWith: { some: { userId } } },
+  });
+
+  return canvases.map((canvas) => {
+    const canManage = canvas.userId === userId;
+
+    return { ...canvas, canManage };
+  });
 };
