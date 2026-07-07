@@ -7,9 +7,10 @@ import useSaveCanvasTitle from "../hooks/useSaveCanvasTitle";
 
 type CanvasItemProps = {
   canvas: Canvas;
+  canManage: boolean;
 };
 
-function CanvasItem({ canvas }: CanvasItemProps) {
+function CanvasItem({ canvas, canManage }: CanvasItemProps) {
   const { id, title: initialTitle, thumbnail, createdAt } = canvas;
   const save = useSaveCanvasTitle();
   const [title, setTitle] = useState(initialTitle);
@@ -58,13 +59,15 @@ function CanvasItem({ canvas }: CanvasItemProps) {
       <div className={styles.metaData}>
         <div className={styles.title}>
           {canvasTitle}
-          <button
-            style={{ display: isEditing ? "none" : "block" }}
-            className={styles.editButton}
-            onClick={() => setIsEditing(true)}
-          >
-            edit
-          </button>
+          {canManage && (
+            <button
+              style={{ display: isEditing ? "none" : "block" }}
+              className={styles.editButton}
+              onClick={() => setIsEditing(true)}
+            >
+              edit
+            </button>
+          )}
         </div>
         <small>Created: {formatDate(createdAt)}</small>
       </div>

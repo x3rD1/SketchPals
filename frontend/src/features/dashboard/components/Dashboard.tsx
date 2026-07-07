@@ -19,7 +19,7 @@ function Dashboard() {
   const hasCanvases = canvasData.length > 0;
   const canvases = canvasData.map((canvas) => (
     <li key={canvas.id}>
-      <CanvasItem canvas={canvas} />
+      <CanvasItem canvas={canvas} canManage={canvas.canManage} />
     </li>
   ));
 
@@ -27,7 +27,7 @@ function Dashboard() {
   const hasSharedCanvases = sharedCanvasData.length > 0;
   const shared = sharedCanvasData.map((canvas) => (
     <li key={canvas.id}>
-      <CanvasItem canvas={canvas} />
+      <CanvasItem canvas={canvas} canManage={canvas.canManage} />
     </li>
   ));
 

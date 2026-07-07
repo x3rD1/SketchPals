@@ -16,6 +16,8 @@ type ToolbarProps = {
 };
 
 function Toolbar({ engine, tool, save, autosave }: ToolbarProps) {
+  const canManage = engine.data.canvasQuery.data.canManage;
+
   return (
     <div className={styles.center}>
       <div className={styles.toolbar}>
@@ -65,9 +67,7 @@ function Toolbar({ engine, tool, save, autosave }: ToolbarProps) {
           </div>
         </div>
       </div>
-      <div>
-        <ShareButton canvasId={engine.id} />
-      </div>
+      <div>{canManage && <ShareButton canvasId={engine.id} />}</div>
     </div>
   );
 }
