@@ -30,16 +30,18 @@ async function request(url: string, options = {}) {
       });
     }
 
-    const refresh = await refreshPromise;
+    try {
+      const refresh = await refreshPromise;
 
-    if (!refresh.ok) throw new Error("Unauthorized");
+      if (!refresh.ok) throw new Error("Unauthorized");
 
-    refreshPromise = null;
-
-    res = await fetch(`${BASE_URL}${url}`, {
-      ...options,
-      credentials: "include",
-    });
+      res = await fetch(`${BASE_URL}${url}`, {
+        ...options,
+        credentials: "include",
+      });
+    } finally {
+      refreshPromise = null;
+    }
   }
 
   if (!res.ok) {
