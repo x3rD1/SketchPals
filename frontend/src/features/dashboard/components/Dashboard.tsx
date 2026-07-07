@@ -1,10 +1,12 @@
+import useCreateCanvas from "../hooks/useCreateCanvas";
 import useDashboardData from "../hooks/useDashboardData";
 import useLogout from "../hooks/useLogout";
 import CanvasItem from "./CanvasItem";
 import styles from "./Dashboard.module.css";
 
 function Dashboard() {
-  const { canvasesQuery, createCanvasMutation } = useDashboardData();
+  const { canvasesQuery, sharedCanvasQuery } = useDashboardData();
+  const createCanvasMutation = useCreateCanvas();
 
   const handleCreate = () => createCanvasMutation.mutate();
 
@@ -16,6 +18,14 @@ function Dashboard() {
 
   const hasCanvases = canvasData.length > 0;
   const canvases = canvasData.map((canvas) => (
+    <li key={canvas.id}>
+      <CanvasItem canvas={canvas} />
+    </li>
+  ));
+
+  const sharedCanvasData = sharedCanvasQuery.data ?? [];
+  const hasSharedCanvases = sharedCanvasData.length > 0;
+  const shared = sharedCanvasData.map((canvas) => (
     <li key={canvas.id}>
       <CanvasItem canvas={canvas} />
     </li>
@@ -40,11 +50,19 @@ function Dashboard() {
           <button onClick={handleCreate}>Start drawing</button>
         </div>
 
-        {hasCanvases ? (
-          <ul className={styles.lists}>{canvases}</ul>
-        ) : (
-          emptyState
-        )}
+        <div>
+          <h3>My canvases: </h3>
+          {hasCanvases ? (
+            <ul className={styles.lists}>{canvases}</ul>
+          ) : (
+            emptyState
+          )}
+        </div>
+
+        <div>
+          <h3>Shared with me: </h3>
+          {hasSharedCanvases ? <ul>{shared}</ul> : "No shared canvases yet"}
+        </div>
       </div>
     </div>
   );
