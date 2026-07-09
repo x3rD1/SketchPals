@@ -11,6 +11,10 @@ import { requireAuth } from "./features/auth/requireAuth";
 
 import { errorMiddleware } from "./middlewares/errorMiddleware";
 
+import { Server } from "socket.io";
+import { createServer } from "node:http";
+import { registerSocketHandlers } from "./socket";
+
 const app = express();
 
 app.use(
@@ -35,7 +39,17 @@ app.use("/users", requireAuth, userRouter);
 // Custom Errors
 app.use(errorMiddleware);
 
+const server = createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: ["http://localhost:5173"],
+    credentials: true,
+  },
+});
+
+registerSocketHandlers(io);
+
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`App is listening to port: ${PORT}`);
 });
