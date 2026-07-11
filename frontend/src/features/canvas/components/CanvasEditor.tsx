@@ -5,6 +5,7 @@ import styles from "./CanvasEditor.module.css";
 import useCanvasTools from "../hooks/useCanvasTools";
 import useSaveCanvas from "../hooks/save/useSaveCanvas";
 import useAutosaveCanvas from "../hooks/save/useAutosaveCanvas";
+import useCanvasRoom from "../hooks/socket/useCanvasRoom";
 
 function CanvasEditor() {
   const engine = useCanvasEngine();
@@ -14,6 +15,9 @@ function CanvasEditor() {
   const autosave = useAutosaveCanvas({ save, engine });
 
   const tool = useCanvasTools({ engine, autosave });
+
+  // Attach socket events on render
+  useCanvasRoom(engine.id);
 
   if (engine.data.canvasQuery.isPending) return <div>Loading...</div>;
 
