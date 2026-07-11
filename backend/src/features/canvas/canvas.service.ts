@@ -6,7 +6,7 @@ import { CanvasOp } from "./canvas.types";
 
 type DbClient = typeof prisma | Prisma.TransactionClient;
 
-const requireCanvasAccess = async (
+export const requireCanvasAccess = async (
   db: DbClient,
   canvasId: string,
   userId: string,
