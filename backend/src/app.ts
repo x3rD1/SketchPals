@@ -14,6 +14,7 @@ import { errorMiddleware } from "./middlewares/errorMiddleware";
 import { Server } from "socket.io";
 import { createServer } from "node:http";
 import { registerSocketHandlers } from "./socket";
+import authenticateSocket from "./socket/auth.middleware";
 
 const app = express();
 
@@ -46,6 +47,8 @@ const io = new Server(server, {
     credentials: true,
   },
 });
+
+io.use(authenticateSocket);
 
 registerSocketHandlers(io);
 
