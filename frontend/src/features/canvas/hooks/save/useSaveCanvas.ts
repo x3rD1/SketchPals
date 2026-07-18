@@ -1,22 +1,36 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { saveCanvas } from "../../api/canvas";
-import type { CanvasEngine, CanvasOp } from "../../types/types";
+import type { CanvasData, CanvasEngine } from "../../types/types";
 import toast from "react-hot-toast";
+import { socket } from "../../../../socket/socket";
 
-type SaveCanvasVars = {
-  ops: CanvasOp[];
+type SaveAck = {
+  success: boolean;
+  message: string;
+  data: CanvasData;
 };
 
 function useSaveCanvas(engine: CanvasEngine) {
-  const saveCanvasMutation = async ({ ops }: SaveCanvasVars) => {
+  const saveCanvasMutation = async () => {
     const blob = await engine.canvas2D.getThumbnailBlob();
+    const arrayBuffer = await blob.arrayBuffer();
 
-    const formData = new FormData();
-    formData.append("image", blob, "thumbnail.webp");
-    formData.append("ops", JSON.stringify(ops));
-    formData.append("version", String(engine.data.version));
-
-    return saveCanvas(engine.id!, formData);
+    return new Promise<CanvasData>((resolve, reject) => {
+      socket.emit(
+        "canvas:save",
+        {
+          canvasId: engine.id,
+          image: arrayBuffer,
+          version: engine.canvasData.data?.version,
+        },
+        (response: SaveAck) => {
+          if (response.success) {
+            resolve(response.data);
+          } else {
+            reject(new Error(response.message));
+          }
+        },
+      );
+    });
   };
 
   const queryClient = useQueryClient();
@@ -32,20 +46,11 @@ function useSaveCanvas(engine: CanvasEngine) {
       // Invalidate dashboard cache
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
 
-      engine.data.setVersion(data.version);
-
       toast.success("Canvas saved.", { id: "save" });
     },
 
-    onError: (_, variables) => {
-      const ops = variables.ops;
-
-      // TODO:
-      // Failed save can restore ops in incorrect order if
-      // new ops are queued while request is in-flight.
-      ops.forEach((item) => engine.canvasOpsQueueRef.current.push(item));
-
-      toast.error("Failed to save.", { id: "save" });
+    onError: (error) => {
+      toast.error(error.message, { id: "save" });
     },
   });
 

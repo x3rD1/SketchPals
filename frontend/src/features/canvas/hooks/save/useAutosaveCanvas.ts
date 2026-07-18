@@ -1,14 +1,11 @@
 import { useCallback, useEffect, useRef } from "react";
-import type { CanvasEngine, SaveCanvas } from "../../types/types";
-import compact from "../../utils/compact";
-import toast from "react-hot-toast";
+import type { SaveCanvas } from "../../types/types";
 
 type useAutosaveCanvasVars = {
   save: SaveCanvas;
-  engine: CanvasEngine;
 };
 
-function useAutosaveCanvas({ save, engine }: useAutosaveCanvasVars) {
+function useAutosaveCanvas({ save }: useAutosaveCanvasVars) {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const commitSave = useCallback(() => {
@@ -17,19 +14,8 @@ function useAutosaveCanvas({ save, engine }: useAutosaveCanvasVars) {
       timeoutRef.current = null;
     }
 
-    // Capture a snapshot of engine.canvasOpsQueueRef.current and clear it
-    const drainedOps = engine.drainOps();
-    if (drainedOps.length === 0) {
-      toast.success("Canvas is already up to date.");
-      return;
-    }
-
-    const compactedOps = compact(drainedOps);
-
-    console.log(compactedOps);
-
-    save.mutate({ ops: compactedOps });
-  }, [save, engine]);
+    save.mutate();
+  }, [save]);
 
   const scheduleAutosave = useCallback(() => {
     if (timeoutRef.current) {
