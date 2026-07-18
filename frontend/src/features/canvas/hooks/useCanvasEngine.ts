@@ -29,7 +29,8 @@ export default function useCanvasEngine() {
 
   const canvas2D = useCanvas2D();
 
-  const history = useCanvasHistory(enqueueOp);
+  const { state, setState, strokes, handleUndo, handleRedo, handleErase } =
+    useCanvasHistory(enqueueOp);
 
   const stroke = useCanvasStroke();
 
@@ -37,43 +38,46 @@ export default function useCanvasEngine() {
 
   const renderer = useCanvasRenderer({
     canvasRef: canvas2D.canvasRef,
-    strokes: history.strokes,
+    strokes,
     currentStroke: stroke.currentStroke,
     viewport: viewport.viewport,
   });
 
-  const data = useCanvasData(id);
+  const canvasData = useCanvasData(id);
 
-  // Hydrate local state using query data on first mount only
+  // Hydrate local state using query data
   useEffect(() => {
-    if (!data.canvasQuery.data) return;
-    if (hasHydrated.current) return;
+    if (!canvasData.data) return;
 
     hasHydrated.current = true;
 
-    // Update local version from database
-    data.setVersion(data.canvasQuery.data.version);
-
     // Deserialize stroke.points from number[] to Point[]
-    const deserializedStrokes = deserializeStrokes(
-      data.canvasQuery.data.strokes,
-    );
+    const deserializedStrokes = deserializeStrokes(canvasData.data.strokes);
 
     // Update local history with existing
-    history.setState({ history: [deserializedStrokes], index: 0 });
-  }, [data, history]);
+    setState({ history: [deserializedStrokes], index: 0 });
+  }, [canvasData.data, setState]);
 
   return {
     canvasOpsQueueRef,
     enqueueOp,
     drainOps,
 
+    hasHydrated,
+
     id,
 
     canvas2D,
 
-    data,
-    history,
+    canvasData,
+
+    state,
+    setState,
+    strokes,
+    handleUndo,
+    handleRedo,
+    handleErase,
+
     stroke,
     viewport,
     renderer,
