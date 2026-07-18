@@ -1,6 +1,9 @@
 import { api } from "../../api/client";
+import type { CanvasData } from "../types/types";
 
-export const getCanvasById = async (id: string | undefined) => {
+export const getCanvasById = async (
+  id: string | undefined,
+): Promise<CanvasData> => {
   return api.get(`/canvas/${id}`);
 };
 
