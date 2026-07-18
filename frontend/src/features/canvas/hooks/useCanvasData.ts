@@ -1,11 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { getCanvasById } from "../api/canvas";
-import { useState } from "react";
 
 export default function useCanvasData(id: string) {
-  const [version, setVersion] = useState<number>(0);
-
-  const canvasQuery = useQuery({
+  const { data, isPending, isError, error } = useQuery({
     queryKey: ["canvas", id],
     queryFn: () => getCanvasById(id),
     enabled: !!id,
@@ -13,9 +10,9 @@ export default function useCanvasData(id: string) {
   });
 
   return {
-    version,
-    setVersion,
-
-    canvasQuery,
+    data,
+    isPending,
+    isError,
+    error,
   };
 }
