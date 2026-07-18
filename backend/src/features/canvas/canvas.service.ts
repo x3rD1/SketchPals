@@ -49,13 +49,13 @@ export const updateCanvas = async ({
   id,
   ops,
   version,
-  file,
+  buffer,
   userId,
 }: {
   id: string;
   ops: CanvasOp[];
   version: number;
-  file: Express.Multer.File;
+  buffer: Buffer;
   userId: string;
 }) =>
   await prisma.$transaction(async (tx) => {
@@ -109,7 +109,7 @@ export const updateCanvas = async ({
         await cloudinary.uploader.destroy(canvas.thumbnailPublicId);
     }
 
-    const uploadResult = await uploadThumbnail(file);
+    const uploadResult = await uploadThumbnail(buffer);
 
     const updatedCanvas = await tx.canvas.update({
       where: { id },

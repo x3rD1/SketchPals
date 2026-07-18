@@ -1,6 +1,6 @@
 import cloudinary from "../config/cloudinary";
 
-export const uploadThumbnail = (file: Express.Multer.File) => {
+export const uploadThumbnail = (buffer: Buffer) => {
   return new Promise<any>((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       {
@@ -12,6 +12,6 @@ export const uploadThumbnail = (file: Express.Multer.File) => {
       },
     );
 
-    stream.end(file.buffer);
+    stream.end(buffer);
   });
 };
