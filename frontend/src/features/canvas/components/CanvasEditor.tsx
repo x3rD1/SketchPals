@@ -12,17 +12,12 @@ function CanvasEditor() {
 
   const save = useSaveCanvas(engine);
 
-  const autosave = useAutosaveCanvas({ save, engine });
+  const autosave = useAutosaveCanvas({ save });
 
   const tool = useCanvasTools({ engine, autosave });
 
   // Attach socket events on render
-  useCanvasRoom(engine.id);
-
-  if (engine.data.canvasQuery.isPending) return <div>Loading...</div>;
-
-  if (engine.data.canvasQuery.isError)
-    return <div>{engine.data.canvasQuery.error.message}</div>;
+  useCanvasRoom(engine);
 
   return (
     <div className={styles.editor}>
