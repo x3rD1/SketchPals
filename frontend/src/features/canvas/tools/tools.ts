@@ -7,13 +7,14 @@ import type {
   SelectDeps,
   State,
   CanvasState,
-  CanvasOp,
 } from "../types/types";
 import { didMove, didMoveEnough } from "../utils/movement";
 import { getSelectionBounds } from "../utils/geometry";
 import { getStrokesInsideBox } from "../utils/selection";
 import simplify from "simplify-js";
-import { serializeStroke } from "../utils/strokeSerialization";
+import commitStroke from "./commitStroke";
+import eraseStroke from "./eraseStroke";
+import moveStrokes from "./moveStroke";
 
 export const penTool = ({
   redraw,
@@ -23,7 +24,7 @@ export const penTool = ({
   color,
   width,
   prevPoint,
-  enqueueOp,
+  canvasId,
   scheduleAutosave,
 }: PenDeps) => ({
   onMouseDown(point: Point) {
@@ -80,14 +81,7 @@ export const penTool = ({
       };
     });
 
-    // Create an operation
-    const op = {
-      type: "add",
-      strokes: [serializeStroke(simplifiedStroke)],
-    } satisfies CanvasOp;
-    // Enqueue the operation
-    enqueueOp(op);
-    scheduleAutosave();
+    commitStroke(canvasId, simplifiedStroke, scheduleAutosave);
 
     currentStroke.current = null; // Resets the current stroke so the future point will not connect to the previous point
     isDrawing.current = false;
@@ -100,8 +94,8 @@ export const eraserTool = ({
   findStrokeId,
   setHoveredId,
   handleErase,
-  enqueueOp,
   scheduleAutosave,
+  canvasId,
 }: EraserDeps) => ({
   onMouseDown(point: Point) {
     const idToRemove = findStrokeId(point, strokes);
@@ -125,14 +119,9 @@ export const eraserTool = ({
   },
   onMouseUp() {
     // Create an idToRemoveRef
-    const idToRemove = removedId.current;
+    const idsToRemove = removedId.current;
 
-    if (idToRemove.length === 0) return;
-
-    const op = { type: "delete", ids: idToRemove } satisfies CanvasOp;
-    enqueueOp(op);
-
-    scheduleAutosave();
+    eraseStroke(canvasId, idsToRemove, scheduleAutosave);
 
     removedId.current = [];
   },
@@ -274,8 +263,8 @@ export const selectTool = ({
   endPointRef,
   isSelectingBox,
   redraw,
-  enqueueOp,
   scheduleAutosave,
+  canvasId,
 }: SelectDeps) => ({
   onMouseDown(point: Point) {
     const id = findStrokeId(point, strokes);
@@ -398,13 +387,7 @@ export const selectTool = ({
     // Return early if moved array is empty
     if (moved.length === 0) return;
 
-    const op = {
-      type: "move",
-      strokes: moved.map((stroke) => serializeStroke(stroke)),
-    } satisfies CanvasOp;
-    enqueueOp(op);
-
-    scheduleAutosave();
+    moveStrokes(canvasId, moved, scheduleAutosave);
 
     movedStrokes.current = [];
   },
