@@ -5,7 +5,7 @@ export const registerSocketHandlers = (io: Server) => {
   io.on("connection", (socket) => {
     console.log("connected");
 
-    registerCanvasHandlers(socket);
+    registerCanvasHandlers(io, socket);
 
     socket.on("disconnect", () => {
       console.log("disconnected");
