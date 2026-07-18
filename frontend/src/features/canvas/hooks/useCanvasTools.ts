@@ -19,7 +19,16 @@ export default function useCanvasTools({
   engine,
   autosave,
 }: useCanvasToolsVars) {
-  const { canvas2D, history, stroke, viewport, renderer, enqueueOp } = engine;
+  const {
+    canvas2D,
+    state,
+    setState,
+    strokes,
+    handleErase,
+    stroke,
+    viewport,
+    renderer,
+  } = engine;
 
   const [tool, setTool] = useState<Tool>("Pen");
 
@@ -43,23 +52,23 @@ export default function useCanvasTools({
   const tools = {
     Pen: penTool({
       redraw: renderer.redraw,
-      setState: history.setState,
+      setState,
       isDrawing,
       currentStroke: stroke.currentStroke,
       color: stroke.color,
       width: stroke.width,
       prevPoint,
-      enqueueOp,
       scheduleAutosave: autosave.scheduleAutosave,
+      canvasId: engine.id,
     }),
     Eraser: eraserTool({
       removedId,
-      strokes: history.strokes,
+      strokes,
       findStrokeId,
       setHoveredId: renderer.setHoveredId,
-      handleErase: history.handleErase,
-      enqueueOp,
+      handleErase,
       scheduleAutosave: autosave.scheduleAutosave,
+      canvasId: engine.id,
     }),
     Pan: panTool({
       isPanning,
@@ -69,23 +78,23 @@ export default function useCanvasTools({
     }),
     Select: selectTool({
       movedStrokes,
-      strokes: history.strokes,
+      strokes,
       isDragging,
       dragStart,
       selectedIdsRef: renderer.selectedIdsRef,
       setHoveredId: renderer.setHoveredId,
       setSelectedIds: renderer.setSelectedIds,
       findStrokeId,
-      state: history.state,
-      setState: history.setState,
+      state,
+      setState,
       initialStateRef,
       setCursorStyle,
       startPointRef: renderer.startPointRef,
       endPointRef: renderer.endPointRef,
       isSelectingBox,
       redraw: renderer.redraw,
-      enqueueOp,
       scheduleAutosave: autosave.scheduleAutosave,
+      canvasId: engine.id,
     }),
   };
 

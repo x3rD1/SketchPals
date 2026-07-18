@@ -66,8 +66,8 @@ export type SelectDeps = {
   endPointRef: React.RefObject<Point | null>;
   isSelectingBox: React.RefObject<boolean>;
   redraw: () => void;
-  enqueueOp: (op: CanvasOp) => void;
   scheduleAutosave: () => void;
+  canvasId: string;
 };
 
 export type PanDeps = {
@@ -85,8 +85,8 @@ export type PenDeps = {
   color: string;
   width: number;
   prevPoint: React.RefObject<Point | null>;
-  enqueueOp: (op: CanvasOp) => void;
   scheduleAutosave: () => void;
+  canvasId: string;
 };
 
 export type EraserDeps = {
@@ -95,8 +95,8 @@ export type EraserDeps = {
   findStrokeId: (mouse: Point, strokes: CanvasState) => string | null;
   setHoveredId: React.Dispatch<React.SetStateAction<string | null>>;
   handleErase: (idToRemove: string) => void;
-  enqueueOp: (op: CanvasOp) => void;
   scheduleAutosave: () => void;
+  canvasId: string;
 };
 
 export type Viewport = {
@@ -120,3 +120,23 @@ export type ToolEngine = ReturnType<typeof useCanvasTools>;
 export type SaveCanvas = ReturnType<typeof useSaveCanvas>;
 
 export type AutosaveCanvas = ReturnType<typeof useAutosaveCanvas>;
+
+export type CanvasData = {
+  canManage: boolean;
+  strokes: {
+    id: string;
+    createdAt: Date;
+    canvasId: string;
+    points: number[];
+    width: number;
+    color: string;
+  }[];
+  id: string;
+  createdAt: Date;
+  title: string;
+  thumbnail: string;
+  thumbnailPublicId: string | null;
+  version: number;
+  userId: string;
+  updateAt: Date;
+};
