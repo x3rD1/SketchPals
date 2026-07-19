@@ -1,8 +1,9 @@
 import { useState } from "react";
-import type { CanvasOp, State } from "../types/types";
+import type { State } from "../types/types";
 import generateOps from "../utils/generateOps";
+import emitOpEvents from "../utils/emitOpEvents";
 
-export default function useCanvasHistory(enqueueOp: (op: CanvasOp) => void) {
+export default function useCanvasHistory(canvasId: string) {
   const [state, setState] = useState<State>({ history: [[]], index: 0 });
 
   const strokes = state.history[state.index];
@@ -14,7 +15,8 @@ export default function useCanvasHistory(enqueueOp: (op: CanvasOp) => void) {
     const previewState = state.history[state.index - 1];
 
     const ops = generateOps(currentState, previewState);
-    ops.forEach((op) => enqueueOp(op));
+
+    emitOpEvents(canvasId, ops);
 
     setState((prev) => ({ ...prev, index: prev.index - 1 }));
   };
@@ -26,7 +28,8 @@ export default function useCanvasHistory(enqueueOp: (op: CanvasOp) => void) {
     const nextState = state.history[state.index + 1];
 
     const ops = generateOps(currentState, nextState);
-    ops.forEach((op) => enqueueOp(op));
+
+    emitOpEvents(canvasId, ops);
 
     setState((prev) => ({ ...prev, index: prev.index + 1 }));
   };
