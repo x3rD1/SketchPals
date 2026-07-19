@@ -4,6 +4,7 @@ import { CanvasEventVars, SaveCanvasVars } from "../types";
 import { updateCanvas } from "../../features/canvas/canvas.service";
 import { CanvasOp } from "../../features/canvas/canvas.types";
 import reorderOps from "../../utils/reorderOperations";
+import reduceOperations from "../../utils/reduceOperations";
 
 const roomState: Record<string, CanvasOp[]> = {};
 const moveOp: CanvasOp = { type: "move", strokes: [] };
@@ -129,11 +130,17 @@ function registerCanvasHandlers(io: Server, socket: Socket) {
 
         const orderedOps = reorderOps(canvasOps);
 
+        const optimizedOps = reduceOperations(orderedOps);
+        if (!optimizedOps.length) {
+          delete roomState[canvasId];
+          throw new Error("Nothing to save");
+        }
+
         const buffer = Buffer.from(file);
 
         const data = {
           id: canvasId,
-          ops: orderedOps,
+          ops: optimizedOps,
           version,
           buffer,
           userId,
