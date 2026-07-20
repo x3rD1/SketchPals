@@ -3,8 +3,8 @@ import { hasAccess } from "./canvas.service";
 import { CanvasEventVars, SaveCanvasVars } from "../types";
 import { updateCanvas } from "../../features/canvas/canvas.service";
 import { CanvasOp } from "../../features/canvas/canvas.types";
-import reorderOps from "../../utils/reorderOperations";
-import reduceOperations from "../../utils/reduceOperations";
+import reorderOps from "../utils/reorderOperations";
+import reduceOperations from "../utils/reduceOperations";
 
 const roomState: Record<string, CanvasOp[]> = {};
 const moveOp: CanvasOp = { type: "move", strokes: [] };
@@ -26,6 +26,10 @@ function registerCanvasHandlers(io: Server, socket: Socket) {
       });
 
       if (!roomState[canvasId]) {
+        // Initialize room
+        roomState[canvasId] = [];
+        roomState[canvasId].push(moveOp);
+
         callback({
           success: true,
           message: "Joined canvas successfully",
@@ -76,10 +80,6 @@ function registerCanvasHandlers(io: Server, socket: Socket) {
   socket.on("canvas:draw", ({ canvasId, op }: CanvasEventVars) => {
     if (op.type !== "add") return;
 
-    if (!roomState[canvasId]) {
-      roomState[canvasId] = [];
-      roomState[canvasId].push(moveOp);
-    }
     roomState[canvasId].push(op);
 
     socket.to(canvasId).emit("canvas:draw", op.strokes);
@@ -88,10 +88,6 @@ function registerCanvasHandlers(io: Server, socket: Socket) {
   socket.on("canvas:erase", ({ canvasId, op }: CanvasEventVars) => {
     if (op.type !== "delete") return;
 
-    if (!roomState[canvasId]) {
-      roomState[canvasId] = [];
-      roomState[canvasId].push(moveOp);
-    }
     roomState[canvasId].push(op);
 
     socket.to(canvasId).emit("canvas:erase", op.ids);
@@ -99,11 +95,6 @@ function registerCanvasHandlers(io: Server, socket: Socket) {
 
   socket.on("canvas:move", ({ canvasId, op }: CanvasEventVars) => {
     if (op.type !== "move") return;
-
-    if (!roomState[canvasId]) {
-      roomState[canvasId] = [];
-      roomState[canvasId].push(moveOp);
-    }
 
     const opIds = new Set(op.strokes.map((stroke) => stroke.id));
 
@@ -131,6 +122,7 @@ function registerCanvasHandlers(io: Server, socket: Socket) {
         const orderedOps = reorderOps(canvasOps);
 
         const optimizedOps = reduceOperations(orderedOps);
+
         if (!optimizedOps.length) {
           delete roomState[canvasId];
           throw new Error("Nothing to save");
