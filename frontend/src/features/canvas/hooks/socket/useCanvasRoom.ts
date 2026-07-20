@@ -8,6 +8,7 @@ import type {
 } from "../../types/types";
 import { deserializeStrokes } from "../../utils/strokeSerialization";
 import { useQueryClient } from "@tanstack/react-query";
+import appendStateToHistory from "../../utils/appendStateToHistory";
 
 type JoinCanvasAck = {
   success: boolean;
@@ -40,42 +41,17 @@ function useCanvasRoom(engine: CanvasEngine) {
         const deserializedStrokes = deserializeStrokes(response.drawStrokes);
 
         setState((prev) => {
-          const currentIndex = prev.index;
-
-          const newHistory = prev.history.slice(0, currentIndex + 1);
-
-          const newState = [
-            ...newHistory[newHistory.length - 1],
-            ...deserializedStrokes,
-          ];
-
-          newHistory.push(newState);
-
-          return {
-            history: newHistory,
-            index: currentIndex + 1,
-          };
+          return appendStateToHistory("add", prev, {
+            newCanvasState: deserializedStrokes,
+          });
         });
       }
 
       if (response.eraseIds.length) {
         setState((prev) => {
-          const currentIndex = prev.index;
-
-          const newHistory = prev.history.slice(0, currentIndex + 1);
-
-          const newState = [
-            ...newHistory[newHistory.length - 1].filter((stroke) => {
-              return !response.eraseIds.some((id) => id === stroke.id);
-            }),
-          ];
-
-          newHistory.push(newState);
-
-          return {
-            history: newHistory,
-            index: currentIndex + 1,
-          };
+          return appendStateToHistory("delete", prev, {
+            idsToRemove: response.eraseIds,
+          });
         });
       }
 
@@ -83,23 +59,9 @@ function useCanvasRoom(engine: CanvasEngine) {
         const deserializedStrokes = deserializeStrokes(response.moveStrokes);
 
         setState((prev) => {
-          const currentIndex = prev.index;
-
-          const newHistory = prev.history.slice(0, currentIndex + 1);
-
-          const newState = [
-            ...newHistory[newHistory.length - 1].filter(
-              (stroke) => !deserializedStrokes.some((s) => stroke.id === s.id),
-            ),
-            ...deserializedStrokes,
-          ];
-
-          newHistory.push(newState);
-
-          return {
-            history: newHistory,
-            index: currentIndex + 1,
-          };
+          return appendStateToHistory("move", prev, {
+            newCanvasState: deserializedStrokes,
+          });
         });
       }
 
@@ -133,21 +95,9 @@ function useCanvasRoom(engine: CanvasEngine) {
       const deserializedStrokes = deserializeStrokes(strokes);
 
       setState((prev) => {
-        const currentIndex = prev.index;
-
-        const newHistory = prev.history.slice(0, currentIndex + 1);
-
-        const newState = [
-          ...newHistory[newHistory.length - 1],
-          ...deserializedStrokes,
-        ];
-
-        newHistory.push(newState);
-
-        return {
-          history: newHistory,
-          index: currentIndex + 1,
-        };
+        return appendStateToHistory("add", prev, {
+          newCanvasState: deserializedStrokes,
+        });
       });
     };
 
@@ -162,22 +112,7 @@ function useCanvasRoom(engine: CanvasEngine) {
   useEffect(() => {
     const removeStrokeFromCanvas = (ids: string[]) => {
       setState((prev) => {
-        const currentIndex = prev.index;
-
-        const newHistory = prev.history.slice(0, currentIndex + 1);
-
-        const newState = [
-          ...newHistory[newHistory.length - 1].filter((stroke) => {
-            return !ids.some((id) => id === stroke.id);
-          }),
-        ];
-
-        newHistory.push(newState);
-
-        return {
-          history: newHistory,
-          index: currentIndex + 1,
-        };
+        return appendStateToHistory("delete", prev, { idsToRemove: ids });
       });
     };
 
@@ -194,23 +129,9 @@ function useCanvasRoom(engine: CanvasEngine) {
       const deserializedStrokes = deserializeStrokes(strokes);
 
       setState((prev) => {
-        const currentIndex = prev.index;
-
-        const newHistory = prev.history.slice(0, currentIndex + 1);
-
-        const newState = [
-          ...newHistory[newHistory.length - 1].filter(
-            (stroke) => !deserializedStrokes.some((s) => stroke.id === s.id),
-          ),
-          ...deserializedStrokes,
-        ];
-
-        newHistory.push(newState);
-
-        return {
-          history: newHistory,
-          index: currentIndex + 1,
-        };
+        return appendStateToHistory("move", prev, {
+          newCanvasState: deserializedStrokes,
+        });
       });
     };
 
@@ -224,7 +145,6 @@ function useCanvasRoom(engine: CanvasEngine) {
   // Save event
   useEffect(() => {
     const updateVersion = (canvas: CanvasData) => {
-      console.log(canvas.canManage);
       queryClient.setQueryData(["canvas", canvasId], canvas);
     };
 
