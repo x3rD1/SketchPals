@@ -1,4 +1,4 @@
-import { CanvasOp } from "../features/canvas/canvas.types";
+import { CanvasOp } from "../../features/canvas/canvas.types";
 
 function reorderOps(ops: CanvasOp[]) {
   const firstItem = ops.shift();

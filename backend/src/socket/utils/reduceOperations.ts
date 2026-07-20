@@ -1,4 +1,4 @@
-import { CanvasOp, StrokeInput } from "../features/canvas/canvas.types";
+import { CanvasOp, StrokeInput } from "../../features/canvas/canvas.types";
 
 type StrokeState = {
   added: boolean;
