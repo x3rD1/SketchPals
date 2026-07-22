@@ -51,19 +51,21 @@ function registerCanvasHandlers(io: Server, socket: Socket) {
       }
 
       const room = roomState[canvasId];
+      const orderedRoomOps = reorderOps(room);
+      const optimizedRoom = reduceOperations(orderedRoomOps);
 
       // Respond to the requester
       callback({
         success: true,
         message: "Joined canvas successfully",
         persisted: canvas.strokes,
-        drawStrokes: room
+        drawStrokes: optimizedRoom
           .filter((op) => op.type === "add")
           .flatMap((op) => op.strokes),
-        eraseIds: room
+        eraseIds: optimizedRoom
           .filter((op) => op.type === "delete")
           .flatMap((op) => op.ids),
-        moveStrokes: room
+        moveStrokes: optimizedRoom
           .filter((op) => op.type === "move")
           .flatMap((op) => op.strokes),
       });
