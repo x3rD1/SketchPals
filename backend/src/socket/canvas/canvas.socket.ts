@@ -133,7 +133,6 @@ function registerCanvasHandlers(io: Server, socket: Socket) {
         const optimizedOps = reduceOperations(orderedOps);
 
         if (!optimizedOps.length) {
-          delete roomState[canvasId];
           throw new Error("Nothing to save");
         }
 
@@ -163,7 +162,9 @@ function registerCanvasHandlers(io: Server, socket: Socket) {
           });
         }
 
-        delete roomState[canvasId];
+        // Reset the room on save
+        roomState[canvasId] = [];
+        roomState[canvasId].push(moveOp);
 
         callback({ success: true, data: canvas });
       } catch (error) {
