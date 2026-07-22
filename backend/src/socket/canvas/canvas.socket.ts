@@ -5,6 +5,10 @@ import { updateCanvas } from "../../features/canvas/canvas.service";
 import { CanvasOp } from "../../features/canvas/canvas.types";
 import reorderOps from "../utils/reorderOperations";
 import reduceOperations from "../utils/reduceOperations";
+import {
+  cancelRoomDeletion,
+  scheduleRoomDeletion,
+} from "../utils/scheduleRoomDeletion";
 
 const roomState: Record<string, CanvasOp[]> = {};
 const moveOp: CanvasOp = { type: "move", strokes: [] };
@@ -15,10 +19,15 @@ function registerCanvasHandlers(io: Server, socket: Socket) {
   socket.on("join-canvas", async (canvasId, callback) => {
     try {
       // Checks whether the authenticated socket has access to canvasId
-      await hasAccess(canvasId, userId);
+      const canvas = await hasAccess(canvasId, userId);
 
       // Make the socket join the canvas
       socket.join(canvasId);
+
+      socket.data.canvasId = canvasId;
+
+      // Cancel pending room deletion timer
+      cancelRoomDeletion(canvasId);
 
       // Notify everyone in the canvas that socket has joined
       socket.to(canvasId).emit("user-joined", {
@@ -33,6 +42,7 @@ function registerCanvasHandlers(io: Server, socket: Socket) {
         callback({
           success: true,
           message: "Joined canvas successfully",
+          persisted: canvas.strokes,
           drawStrokes: [],
           eraseIds: [],
           moveStrokes: [],
@@ -46,6 +56,7 @@ function registerCanvasHandlers(io: Server, socket: Socket) {
       callback({
         success: true,
         message: "Joined canvas successfully",
+        persisted: canvas.strokes,
         drawStrokes: room
           .filter((op) => op.type === "add")
           .flatMap((op) => op.strokes),
@@ -65,11 +76,7 @@ function registerCanvasHandlers(io: Server, socket: Socket) {
     // Make the socket leave the canvas
     socket.leave(canvasId);
 
-    const room = io.sockets.adapter.rooms.get(canvasId);
-
-    if (!room || room.size === 0) {
-      delete roomState[canvasId];
-    }
+    scheduleRoomDeletion(io, roomState, canvasId);
 
     // Notify everyone in the canvas that socket left the canvas
     socket.to(canvasId).emit("user-left", {
@@ -164,6 +171,15 @@ function registerCanvasHandlers(io: Server, socket: Socket) {
     },
   );
 
+  socket.on("disconnect", () => {
+    console.log("disconnected");
+
+    const canvasId = socket.data.canvasId;
+
+    if (!canvasId) return;
+
+    scheduleRoomDeletion(io, roomState, canvasId);
+  });
   return;
 }
 
