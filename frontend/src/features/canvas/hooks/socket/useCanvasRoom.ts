@@ -13,57 +13,40 @@ import appendStateToHistory from "../../utils/appendStateToHistory";
 type JoinCanvasAck = {
   success: boolean;
   message: string;
+  persisted: SerializedStroke[];
   drawStrokes: SerializedStroke[];
   eraseIds: string[];
   moveStrokes: SerializedStroke[];
 };
 
 function useCanvasRoom(engine: CanvasEngine) {
-  const { id: canvasId, setState, hasHydrated } = engine;
-
-  const didHydrate = hasHydrated.current;
+  const { id: canvasId, setState } = engine;
 
   const queryClient = useQueryClient();
 
-  // Join + User event
+  // Join the user to the socket room
   useEffect(() => {
-    if (!canvasId) return;
-    if (!didHydrate) return;
-
-    // Hydrate local state from room state on join
     const handleJoinCanvas = (response: JoinCanvasAck) => {
       if (!response.success) {
         toast.error(response.message);
         return;
       }
 
-      if (response.drawStrokes.length) {
-        const deserializedStrokes = deserializeStrokes(response.drawStrokes);
+      const strokes = {
+        persisted: deserializeStrokes(response.persisted),
+        unsaved: deserializeStrokes(response.drawStrokes),
+        erasedIds: response.eraseIds,
+        moved: deserializeStrokes(response.moveStrokes),
+      };
 
-        setState((prev) => {
-          return appendStateToHistory("add", prev, {
-            newCanvasState: deserializedStrokes,
-          });
-        });
-      }
+      const liveCanvas = strokes.persisted
+        .concat(strokes.unsaved)
+        .filter((stroke) => !strokes.erasedIds.some((id) => id === stroke.id))
+        .filter((stroke) => !strokes.moved.some((s) => s.id === stroke.id))
+        .concat(strokes.moved);
 
-      if (response.eraseIds.length) {
-        setState((prev) => {
-          return appendStateToHistory("delete", prev, {
-            idsToRemove: response.eraseIds,
-          });
-        });
-      }
-
-      if (response.moveStrokes.length) {
-        const deserializedStrokes = deserializeStrokes(response.moveStrokes);
-
-        setState((prev) => {
-          return appendStateToHistory("move", prev, {
-            newCanvasState: deserializedStrokes,
-          });
-        });
-      }
+      // Hydrate local state with live canvas
+      setState({ history: [liveCanvas], index: 0 });
 
       toast.success(response.message);
     };
@@ -87,7 +70,7 @@ function useCanvasRoom(engine: CanvasEngine) {
       socket.off("user-joined", handleUserJoin);
       socket.off("user-left", handleUserLeft);
     };
-  }, [canvasId, setState, didHydrate, queryClient]);
+  }, [canvasId, setState, queryClient]);
 
   // Draw event
   useEffect(() => {
