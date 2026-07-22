@@ -51,6 +51,15 @@ function useCanvasRoom(engine: CanvasEngine) {
       toast.success(response.message);
     };
 
+    socket.emit("join-canvas", canvasId, handleJoinCanvas);
+
+    return () => {
+      socket.emit("leave-canvas", canvasId);
+    };
+  }, [canvasId, setState, queryClient]);
+
+  // Notify the user when someone joins or leaves
+  useEffect(() => {
     const handleUserJoin = ({ message }: { message: string }) => {
       toast(message);
     };
@@ -59,18 +68,14 @@ function useCanvasRoom(engine: CanvasEngine) {
       toast(message);
     };
 
-    socket.emit("join-canvas", canvasId, handleJoinCanvas);
-
     socket.on("user-joined", handleUserJoin);
     socket.on("user-left", handleUserLeft);
 
     return () => {
-      socket.emit("leave-canvas", canvasId);
-
       socket.off("user-joined", handleUserJoin);
       socket.off("user-left", handleUserLeft);
     };
-  }, [canvasId, setState, queryClient]);
+  }, []);
 
   // Draw event
   useEffect(() => {
