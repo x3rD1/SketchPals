@@ -1,12 +1,13 @@
 import { CanvasOp } from "../../features/canvas/canvas.types";
 
 function reorderOps(ops: CanvasOp[]) {
-  const firstItem = ops.shift();
-  if (!firstItem) return ops;
+  const moveOp = ops.filter((op) => op.type === "move");
 
-  ops.push(firstItem);
+  const reordered: CanvasOp[] = ops.filter((op) => op.type !== "move");
 
-  return ops;
+  const orderedOps = reordered.concat(moveOp);
+
+  return orderedOps;
 }
 
 export default reorderOps;
