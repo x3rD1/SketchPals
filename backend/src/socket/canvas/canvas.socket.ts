@@ -10,9 +10,9 @@ import {
   scheduleRoomDeletion,
 } from "../utils/scheduleRoomDeletion";
 import getRoom from "../utils/getRoom";
+import initializeRoom from "../utils/initializeRoom";
 
 const roomState: Record<string, CanvasOp[]> = {};
-const moveOp: CanvasOp = { type: "move", strokes: [] };
 
 function registerCanvasHandlers(io: Server, socket: Socket) {
   const { id: userId, username } = socket.user;
@@ -36,9 +36,7 @@ function registerCanvasHandlers(io: Server, socket: Socket) {
       });
 
       if (!roomState[canvasId]) {
-        // Initialize room
-        roomState[canvasId] = [];
-        roomState[canvasId].push(moveOp);
+        initializeRoom(roomState, canvasId);
 
         callback({
           success: true,
@@ -191,8 +189,7 @@ function registerCanvasHandlers(io: Server, socket: Socket) {
         }
 
         // Reset the room on save
-        roomState[canvasId] = [];
-        roomState[canvasId].push(moveOp);
+        initializeRoom(roomState, canvasId);
 
         callback({ success: true, data: canvas });
       } catch (error) {
