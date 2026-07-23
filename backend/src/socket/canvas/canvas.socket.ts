@@ -9,6 +9,7 @@ import {
   cancelRoomDeletion,
   scheduleRoomDeletion,
 } from "../utils/scheduleRoomDeletion";
+import getRoom from "../utils/getRoom";
 
 const roomState: Record<string, CanvasOp[]> = {};
 const moveOp: CanvasOp = { type: "move", strokes: [] };
@@ -50,7 +51,7 @@ function registerCanvasHandlers(io: Server, socket: Socket) {
         return;
       }
 
-      const room = roomState[canvasId];
+      const room = getRoom(roomState, canvasId);
       const orderedRoomOps = reorderOps(room);
       const optimizedRoom = reduceOperations(orderedRoomOps);
 
@@ -87,38 +88,65 @@ function registerCanvasHandlers(io: Server, socket: Socket) {
   });
 
   socket.on("canvas:draw", ({ canvasId, op }: CanvasEventVars) => {
-    if (op.type !== "add") return;
+    try {
+      if (op.type !== "add") return;
 
-    roomState[canvasId].push(op);
+      const room = getRoom(roomState, canvasId);
 
-    socket.to(canvasId).emit("canvas:draw", op.strokes);
+      room.push(op);
+
+      socket.to(canvasId).emit("canvas:draw", op.strokes);
+    } catch (error) {
+      if (error instanceof Error) {
+        socket.emit("canvas:error", error.message);
+        console.error(error.message);
+      }
+    }
   });
 
   socket.on("canvas:erase", ({ canvasId, op }: CanvasEventVars) => {
-    if (op.type !== "delete") return;
+    try {
+      if (op.type !== "delete") return;
 
-    roomState[canvasId].push(op);
+      const room = getRoom(roomState, canvasId);
 
-    socket.to(canvasId).emit("canvas:erase", op.ids);
+      room.push(op);
+
+      socket.to(canvasId).emit("canvas:erase", op.ids);
+    } catch (error) {
+      if (error instanceof Error) {
+        socket.emit("canvas:error", error.message);
+        console.error(error.message);
+      }
+    }
   });
 
   socket.on("canvas:move", ({ canvasId, op }: CanvasEventVars) => {
-    if (op.type !== "move") return;
+    try {
+      if (op.type !== "move") return;
 
-    const opIds = new Set(op.strokes.map((stroke) => stroke.id));
+      let room = getRoom(roomState, canvasId);
 
-    roomState[canvasId] = roomState[canvasId].map((roomOp) => {
-      if (roomOp.type !== "move") return roomOp;
+      const opIds = new Set(op.strokes.map((stroke) => stroke.id));
 
-      const strokes = roomOp.strokes.filter((s) => !opIds.has(s.id));
+      room = roomState[canvasId].map((roomOp) => {
+        if (roomOp.type !== "move") return roomOp;
 
-      return {
-        ...roomOp,
-        strokes: [...strokes, ...op.strokes],
-      };
-    });
+        const strokes = roomOp.strokes.filter((s) => !opIds.has(s.id));
 
-    socket.to(canvasId).emit("canvas:move", op.strokes);
+        return {
+          ...roomOp,
+          strokes: [...strokes, ...op.strokes],
+        };
+      });
+
+      socket.to(canvasId).emit("canvas:move", op.strokes);
+    } catch (error) {
+      if (error instanceof Error) {
+        socket.emit("canvas:error", error.message);
+        console.error(error.message);
+      }
+    }
   });
 
   socket.on(

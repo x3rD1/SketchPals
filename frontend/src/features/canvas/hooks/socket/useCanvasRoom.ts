@@ -142,6 +142,18 @@ function useCanvasRoom(engine: CanvasEngine) {
       socket.off("canvas:save", updateVersion);
     };
   }, [canvasId, queryClient]);
+
+  useEffect(() => {
+    const handleError = (message: string) => {
+      toast.error(message);
+    };
+
+    socket.on("canvas:error", handleError);
+
+    return () => {
+      socket.off("canvas:error", handleError);
+    };
+  });
   return;
 }
 
