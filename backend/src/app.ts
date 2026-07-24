@@ -18,6 +18,8 @@ import authenticateSocket from "./socket/auth.middleware";
 
 const app = express();
 
+app.set("trust proxy", 1);
+
 const allowedOrigin = process.env.FRONTEND_URL;
 
 app.use(
