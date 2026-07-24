@@ -38,30 +38,6 @@ export const createCanvas = async (
   }
 };
 
-export const updateCanvas = async (
-  req: Request<Params>,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
-    const data = {
-      id: req.params.id,
-      ops: JSON.parse(req.body.ops),
-      version: Number(req.body.version),
-      file: req.file!,
-      userId: req.user.id,
-    };
-
-    if (!data.file) throw new AppError("Missing thumbnail", 400);
-
-    const updated = await canvasService.updateCanvas(data);
-
-    res.json(updated);
-  } catch (error) {
-    next(error);
-  }
-};
-
 export const getCanvasMembers = async (
   req: Request<Params>,
   res: Response,
