@@ -46,28 +46,44 @@ export const createCanvas = async (userId: string) => {
 };
 
 export const updateCanvas = async ({
-  id,
+  canvasId,
   ops,
   version,
   buffer,
   userId,
 }: {
-  id: string;
+  canvasId: string;
   ops: CanvasOp[];
   version: number;
   buffer: Buffer;
   userId: string;
-}) =>
-  await prisma.$transaction(async (tx) => {
-    if (ops.length > 0) {
-      const canvas = await requireCanvasAccess(tx, id, userId);
+}) => {
+  const uploadResult = await uploadThumbnail(buffer);
 
-      if (canvas.version !== version)
-        throw new AppError(
-          "Canvas version conflict",
-          400,
-          "CANVAS_VERSION_CONFLICT",
-        );
+  try {
+    let oldThumbnailPublicId;
+
+    const result = await prisma.$transaction(async (tx) => {
+      if (!ops.length) throw new Error("No operations to be saved");
+
+      // Check whether the userId has access to canvasId
+      const canvas = await requireCanvasAccess(tx, canvasId, userId);
+
+      oldThumbnailPublicId = canvas.thumbnailPublicId;
+
+      const updateResult = await tx.canvas.updateMany({
+        where: { id: canvasId, version },
+        data: {
+          version: { increment: 1 },
+          thumbnail: uploadResult.secure_url,
+          thumbnailPublicId: uploadResult.public_id,
+        },
+      });
+
+      if (!updateResult.count) {
+        console.error("CANVAS_VERSION_CONFLICT");
+        throw new Error("A newer save already exists.");
+      }
 
       for (const op of ops) {
         if (op.type === "add") {
@@ -78,7 +94,7 @@ export const updateCanvas = async ({
                 points: stroke.points,
                 width: stroke.width,
                 color: stroke.color,
-                canvasId: id,
+                canvasId,
               },
             });
           }
@@ -105,26 +121,37 @@ export const updateCanvas = async ({
         }
       }
 
-      if (canvas.thumbnailPublicId)
-        await cloudinary.uploader.destroy(canvas.thumbnailPublicId);
-    }
+      const updatedCanvas = await tx.canvas.findUnique({
+        where: { id: canvasId },
+        include: { strokes: true },
+      });
 
-    const uploadResult = await uploadThumbnail(buffer);
+      if (!updatedCanvas) throw new Error("Canvas does not exists");
 
-    const updatedCanvas = await tx.canvas.update({
-      where: { id },
-      data: {
-        version: { increment: 1 },
-        thumbnail: uploadResult.secure_url,
-        thumbnailPublicId: uploadResult.public_id,
-      },
-      include: { strokes: true },
+      const canManage = updatedCanvas.userId === userId;
+
+      return { ...updatedCanvas, canManage };
     });
 
-    const canManage = updatedCanvas.userId === userId;
+    if (oldThumbnailPublicId)
+      await cloudinary.uploader.destroy(oldThumbnailPublicId);
 
-    return { ...updatedCanvas, canManage };
-  });
+    return result;
+  } catch (error) {
+    if (uploadResult.public_id) {
+      await cloudinary.uploader.destroy(uploadResult.public_id);
+    }
+
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2002") {
+        console.error(error.message);
+        throw new Error("A newer save already exists.");
+      }
+    }
+
+    throw error;
+  }
+};
 
 export const getCanvasMembers = async (canvasId: string) => {
   const canvas = await prisma.canvas.findUnique({ where: { id: canvasId } });

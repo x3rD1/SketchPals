@@ -1,6 +1,7 @@
+import { UploadApiResponse } from "cloudinary";
 import cloudinary from "../config/cloudinary";
 
-export const uploadThumbnail = (buffer: Buffer) => {
+export const uploadThumbnail = (buffer: Buffer): Promise<UploadApiResponse> => {
   return new Promise<any>((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       {
@@ -8,6 +9,10 @@ export const uploadThumbnail = (buffer: Buffer) => {
       },
       (error, result) => {
         if (error) return reject(error);
+
+        if (!result)
+          return reject(new Error("Cloudinary upload returned no result."));
+
         resolve(result);
       },
     );

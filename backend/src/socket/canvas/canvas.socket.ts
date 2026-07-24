@@ -11,6 +11,7 @@ import {
 } from "../utils/scheduleRoomDeletion";
 import getRoom from "../utils/getRoom";
 import initializeRoom from "../utils/initializeRoom";
+import { Prisma } from "@prisma/client";
 
 const roomState: Record<string, CanvasOp[]> = {};
 
@@ -165,7 +166,7 @@ function registerCanvasHandlers(io: Server, socket: Socket) {
         const buffer = Buffer.from(file);
 
         const data = {
-          id: canvasId,
+          canvasId,
           ops: optimizedOps,
           version,
           buffer,
@@ -193,8 +194,12 @@ function registerCanvasHandlers(io: Server, socket: Socket) {
 
         callback({ success: true, data: canvas });
       } catch (error) {
-        if (error instanceof Error)
+        if (
+          error instanceof Error ||
+          error instanceof Prisma.PrismaClientKnownRequestError
+        ) {
           callback({ success: false, message: error.message, data: null });
+        }
       }
     },
   );
