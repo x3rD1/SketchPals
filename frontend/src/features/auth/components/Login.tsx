@@ -14,7 +14,7 @@ function Login() {
         try {
           const idToken = res.credential;
 
-          const response = await fetch("http://localhost:3000/auth/google", {
+          const response = await fetch("/api/auth/google", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",

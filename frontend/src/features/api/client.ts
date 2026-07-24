@@ -1,4 +1,3 @@
-const BASE_URL = import.meta.env.VITE_API_URL;
 type JsonBody = Record<string, unknown>;
 
 let refreshPromise: Promise<Response> | null = null;
@@ -17,14 +16,14 @@ function buildOptions(
 }
 
 async function request(url: string, options = {}) {
-  let res = await fetch(`${BASE_URL}${url}`, {
+  let res = await fetch(`/api${url}`, {
     ...options,
     credentials: "include",
   });
 
   if (res.status === 401) {
     if (!refreshPromise) {
-      refreshPromise = fetch(`${BASE_URL}/auth/refresh`, {
+      refreshPromise = fetch(`/api/auth/refresh`, {
         method: "POST",
         credentials: "include",
       });
@@ -35,7 +34,7 @@ async function request(url: string, options = {}) {
 
       if (!refresh.ok) throw new Error("Unauthorized");
 
-      res = await fetch(`${BASE_URL}${url}`, {
+      res = await fetch(`/api${url}`, {
         ...options,
         credentials: "include",
       });

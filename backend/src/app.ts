@@ -18,32 +18,35 @@ import authenticateSocket from "./socket/auth.middleware";
 
 const app = express();
 
+const allowedOrigin = process.env.FRONTEND_URL;
+
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: allowedOrigin,
     credentials: true,
   }),
 );
 app.use(express.json());
 app.use(cookieParser());
 
-app.get("/", (req, res) => {
+app.get("/api", (req, res) => {
   res.send("API is running!");
 });
 
 // Routes
-app.use("/auth", authRouter);
-app.use("/dashboard", requireAuth, dashboardRouter);
-app.use("/canvas", requireAuth, canvasRouter);
-app.use("/users", requireAuth, userRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/dashboard", requireAuth, dashboardRouter);
+app.use("/api/canvas", requireAuth, canvasRouter);
+app.use("/api/users", requireAuth, userRouter);
 
 // Custom Errors
 app.use(errorMiddleware);
 
 const server = createServer(app);
 const io = new Server(server, {
+  path: "/api/socket.io",
   cors: {
-    origin: ["http://localhost:5173"],
+    origin: allowedOrigin,
     credentials: true,
   },
 });
