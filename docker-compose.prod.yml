@@ -3,10 +3,12 @@ services:
     image: postgres:16
     container_name: postgres_db
     restart: unless-stopped
+
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=sketch_db
+
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -14,14 +16,29 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile.prod
+
     container_name: sketch_backend
     restart: unless-stopped
-    ports:
-      - "3000:3000"
+
+    expose:
+      - "3000"
+
     env_file:
       - ./backend/.env.prod
+
     depends_on:
       - postgres
+
+  nginx:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile.prod
+
+    ports:
+      - "80:80"
+
+    depends_on:
+      - backend
 
 volumes:
   postgres_data:
