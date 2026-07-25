@@ -1,4 +1,4 @@
-import { Stroke } from "../../generated/prisma/client";
+import { Stroke } from "@prisma/client";
 
 export type StrokeInput = {
   id: string;

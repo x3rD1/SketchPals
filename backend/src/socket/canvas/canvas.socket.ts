@@ -11,7 +11,7 @@ import {
 } from "../utils/scheduleRoomDeletion";
 import getRoom from "../utils/getRoom";
 import initializeRoom from "../utils/initializeRoom";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../lib/prisma";
 
 const roomState: Record<string, CanvasOp[]> = {};
 
