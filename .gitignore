@@ -1,0 +1,9 @@
+# Environment files
+.env
+.env.prod
+
+# OS files
+.DS_Store
+
+# Docker
+*.log
