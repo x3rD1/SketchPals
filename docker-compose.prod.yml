@@ -3,7 +3,6 @@ name: canvas-prod
 services:
   postgres:
     image: postgres:16
-    container_name: postgres_db
     restart: unless-stopped
 
     environment:
@@ -25,7 +24,6 @@ services:
       context: ./backend
       dockerfile: Dockerfile.prod
 
-    container_name: sketch_backend
     restart: unless-stopped
 
     expose:
