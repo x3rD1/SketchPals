@@ -16,7 +16,7 @@ type ToolbarProps = {
 };
 
 function Toolbar({ engine, tool, save, autosave }: ToolbarProps) {
-  const canManage = engine.data.canvasQuery.data.canManage;
+  const canManage = engine.canvasData.data?.canManage;
 
   return (
     <div className={styles.center}>
@@ -46,17 +46,14 @@ function Toolbar({ engine, tool, save, autosave }: ToolbarProps) {
 
           <div className={`${styles.history} ${styles.buttonGroup}`}>
             <button
-              onClick={engine.history.handleUndo}
-              disabled={engine.history.state.index === 0}
+              onClick={engine.handleUndo}
+              disabled={engine.state.index === 0}
             >
               Undo
             </button>
             <button
-              onClick={engine.history.handleRedo}
-              disabled={
-                engine.history.state.index ===
-                engine.history.state.history.length - 1
-              }
+              onClick={engine.handleRedo}
+              disabled={engine.state.index === engine.state.history.length - 1}
             >
               Redo
             </button>
