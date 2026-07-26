@@ -7,3 +7,5 @@
 
 # Docker
 *.log
+
+nginx/certbot/
