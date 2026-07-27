@@ -1,4 +1,4 @@
-name: Test Workflow
+name: Auto deploy Workflow
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -37,9 +37,3 @@ jobs:
       - name: Build backend
         run: npm run build
         working-directory: backend
-
-      - name: List all files
-        run: ls
-
-      - name: Say hello
-        run: echo "Github Action works!"
