@@ -47,3 +47,6 @@ jobs:
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{secrets.SSH_PRIVATE_KEY}}
+
+      - name: Test SSH connection
+        run: ssh root@68.183.141.196 "echo Connected successfully"
