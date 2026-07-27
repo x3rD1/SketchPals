@@ -37,3 +37,11 @@ jobs:
       - name: Build backend
         run: npm run build
         working-directory: backend
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy placeholder
+        run: echo "Deploying..."
