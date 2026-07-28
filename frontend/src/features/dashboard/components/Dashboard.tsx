@@ -34,8 +34,7 @@ function Dashboard() {
     <div className={styles.emptyState}>
       <h2>No canvases yet</h2>
       <p>
-        Create your first canvas by clicking <strong>Start drawing</strong>{" "}
-        button.
+        Create your first canvas by clicking <strong>New Canvas</strong> button.
       </p>
     </div>
   );
@@ -77,11 +76,15 @@ function Dashboard() {
             My Canvases ({canvases.length})
           </h2>
 
-          <ul className={styles.lists}>
-            {canvasesQuery.isPending ? <CanvasSkeleton /> : canvases}
-          </ul>
-
-          {!canvasesQuery.isPending && !hasCanvases && emptyState}
+          {canvasesQuery.isPending ? (
+            <ul className={styles.lists}>
+              <CanvasSkeleton />
+            </ul>
+          ) : hasCanvases ? (
+            <ul className={styles.lists}>{canvases}</ul>
+          ) : (
+            emptyState
+          )}
         </section>
 
         <section className={styles.section}>
@@ -89,12 +92,17 @@ function Dashboard() {
             Shared with Me ({shared.length})
           </h2>
 
-          <ul className={styles.lists}>
-            {sharedCanvasQuery.isPending ? <CanvasSkeleton /> : shared}
-          </ul>
-
-          {!sharedCanvasQuery.isPending && !hasSharedCanvases && (
-            <p className={styles.emptyShared}>No shared canvases yet.</p>
+          {sharedCanvasQuery.isPending ? (
+            <ul className={styles.lists}>
+              <CanvasSkeleton />
+            </ul>
+          ) : hasSharedCanvases ? (
+            <ul className={styles.lists}>{shared}</ul>
+          ) : (
+            <div className={styles.emptyShared}>
+              <h2>No shared canvases yet</h2>
+              <p>When someone shares a canvas with you, it will appear here.</p>
+            </div>
           )}
         </section>
       </div>
