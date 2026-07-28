@@ -54,5 +54,5 @@ jobs:
       - name: Pull latest code
         run: ssh root@68.183.141.196 "cd /root/SketchPals && git pull"
 
-      - name: Build Docker images
-        run: ssh root@68.183.141.196 "cd /root/SketchPals && docker compose -f docker-compose.prod.yml build"
+      - name: Deploy containers
+        run: ssh root@68.183.141.196 "cd /root/SketchPals && docker compose -f docker-compose.prod.yml up -d --build"
