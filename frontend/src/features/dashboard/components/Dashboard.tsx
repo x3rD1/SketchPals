@@ -2,6 +2,7 @@ import useCreateCanvas from "../hooks/useCreateCanvas";
 import useDashboardData from "../hooks/useDashboardData";
 import useLogout from "../hooks/useLogout";
 import CanvasItem from "./CanvasItem";
+import CanvasSkeleton from "./CanvasSkeleton";
 import styles from "./Dashboard.module.css";
 
 function Dashboard() {
@@ -13,8 +14,6 @@ function Dashboard() {
   const handleLogout = useLogout();
 
   const canvasData = canvasesQuery.data ?? [];
-
-  if (canvasesQuery.isPending) return <p>Loading...</p>; //temporary
 
   const hasCanvases = canvasData.length > 0;
   const canvases = canvasData.map((canvas) => (
@@ -43,26 +42,61 @@ function Dashboard() {
 
   return (
     <div className={styles.dashboard}>
-      <h1 className={styles.title}>Dashboard</h1>
-      <button onClick={handleLogout}>Logout</button>
       <div className={styles.main}>
+        <div className={styles.topBar}>
+          <div>
+            <h1 className={styles.title}>Workspace</h1>
+            <p className={styles.subtitle}>Continue where you left off.</p>
+          </div>
+
+          <button className={styles.logout} onClick={handleLogout}>
+            Logout
+          </button>
+        </div>
+
         <div className={styles.createBtn}>
-          <button onClick={handleCreate}>Start drawing</button>
+          <button onClick={handleCreate}>
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 5v14M5 12h14" />
+            </svg>{" "}
+            <span>New Canvas</span>
+          </button>
         </div>
 
-        <div>
-          <h3>My canvases: </h3>
-          {hasCanvases ? (
-            <ul className={styles.lists}>{canvases}</ul>
-          ) : (
-            emptyState
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>
+            My Canvases ({canvases.length})
+          </h2>
+
+          <ul className={styles.lists}>
+            {canvasesQuery.isPending ? <CanvasSkeleton /> : canvases}
+          </ul>
+
+          {!canvasesQuery.isPending && !hasCanvases && emptyState}
+        </section>
+
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>
+            Shared with Me ({shared.length})
+          </h2>
+
+          <ul className={styles.lists}>
+            {sharedCanvasQuery.isPending ? <CanvasSkeleton /> : shared}
+          </ul>
+
+          {!sharedCanvasQuery.isPending && !hasSharedCanvases && (
+            <p className={styles.emptyShared}>No shared canvases yet.</p>
           )}
-        </div>
-
-        <div>
-          <h3>Shared with me: </h3>
-          {hasSharedCanvases ? <ul>{shared}</ul> : "No shared canvases yet"}
-        </div>
+        </section>
       </div>
     </div>
   );

@@ -1,48 +1,124 @@
 .canvasItem {
-  display: block;
-
-  border-radius: 8px;
-  border: 1px solid black;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
   overflow: hidden;
-  background: white;
 
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  transition: transform 0.15s ease;
+  display: flex;
+  flex-direction: column;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .canvasItem:hover {
-  transform: scale(1.02);
+  transform: translateY(-4px);
+  border-color: #c7d2fe;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.08);
 }
 
 .linkArea {
-  text-decoration: none;
-  color: inherit;
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: #f3f4f6;
 }
 
-.canvasItem img {
+.linkArea img {
   width: 100%;
-  aspect-ratio: 1 / 1;
+  height: 100%;
+  object-fit: cover;
+
+  transition: opacity 0.2s ease;
+}
+
+.hidden {
+  opacity: 0;
+}
+
+.loaded {
+  opacity: 1;
+}
+
+.placeholder {
+  position: absolute;
+  inset: 0;
+
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite;
+}
+
+.canvasItem:hover img {
+  transform: scale(1.03);
 }
 
 .metaData {
-  /* border: 1px solid lightskyblue; */
-  background-color: rgb(232, 249, 255);
-
   padding: 1rem;
-}
-
-.metaData h2 {
-  font-size: 1.125rem;
 }
 
 .title {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
 
-  border: 1px solid red;
-  gap: 0.2rem;
+.title h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .inputTitle {
-  font-size: 1.125rem;
-  font-weight: 900;
+  flex: 1;
+
+  font: inherit;
+  font-weight: 600;
+
+  border: 1px solid #c7d2fe;
+  border-radius: 8px;
+
+  padding: 0.35rem 0.55rem;
+
+  outline: none;
+}
+
+.inputTitle:focus {
+  border-color: #6366f1;
+}
+
+.editButton {
+  flex-shrink: 0;
+
+  border: none;
+  background: transparent;
+
+  color: #6366f1;
+  font-size: 0.85rem;
+  font-weight: 500;
+
+  cursor: pointer;
+
+  padding: 0;
+}
+
+.metaData small {
+  color: #6b7280;
+  font-size: 0.82rem;
+}
+
+@media (max-width: 640px) {
+  .metaData {
+    padding: 0.9rem;
+  }
 }

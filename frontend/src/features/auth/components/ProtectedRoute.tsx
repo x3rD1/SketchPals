@@ -8,7 +8,7 @@ type Props = {
 export default function ProtectedRoute({ children }: Props) {
   const { isPending, isAuthenticated } = useAuth();
 
-  if (isPending) return <div>Loading...</div>;
+  if (isPending) return null;
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
 

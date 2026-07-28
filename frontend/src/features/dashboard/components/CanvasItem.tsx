@@ -15,6 +15,7 @@ function CanvasItem({ canvas, canManage }: CanvasItemProps) {
   const save = useSaveCanvasTitle();
   const [title, setTitle] = useState(initialTitle);
   const [isEditing, setIsEditing] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const commitSave = (id: string, title: string) => {
@@ -53,19 +54,27 @@ function CanvasItem({ canvas, canManage }: CanvasItemProps) {
   return (
     <div className={styles.canvasItem}>
       <Link to={`/canvas/${id}`} className={styles.linkArea}>
-        <img src={thumbnail} alt={title} />
+        {!imageLoaded && <div className={styles.placeholder} />}
+
+        <img
+          src={thumbnail}
+          alt={title}
+          onLoad={() => setImageLoaded(true)}
+          className={imageLoaded ? styles.loaded : styles.hidden}
+        />
       </Link>
 
       <div className={styles.metaData}>
         <div className={styles.title}>
           {canvasTitle}
+
           {canManage && (
             <button
               style={{ display: isEditing ? "none" : "block" }}
               className={styles.editButton}
               onClick={() => setIsEditing(true)}
             >
-              edit
+              ✏️
             </button>
           )}
         </div>
