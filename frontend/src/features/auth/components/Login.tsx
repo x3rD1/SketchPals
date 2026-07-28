@@ -1,6 +1,7 @@
 import { GoogleLogin } from "@react-oauth/google";
 import { useNavigate } from "react-router-dom";
 import useAuth from "../hook/useAuth";
+import styles from "./Login.module.css";
 
 function Login() {
   const navigate = useNavigate();
@@ -9,28 +10,44 @@ function Login() {
   if (isAuthenticated) navigate("/", { replace: true });
 
   return (
-    <GoogleLogin
-      onSuccess={async (res) => {
-        try {
-          const idToken = res.credential;
+    <div className={styles.container}>
+      <div className={styles.hero}>
+        <span className={styles.badge}>Realtime collaboration</span>
 
-          const response = await fetch("/api/auth/google", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ idToken }),
-          });
+        <h1>SketchPals</h1>
 
-          if (!response.ok) {
-            throw new Error("Login failed");
-          }
+        <p>Brainstorm, sketch, and build together in real-time.</p>
 
-          navigate("/", { replace: true });
-        } catch (error) {
-          console.log(error);
-        }
-      }}
-    />
+        <div className={styles.googleButton}>
+          <GoogleLogin
+            onSuccess={async (res) => {
+              try {
+                const idToken = res.credential;
+
+                const response = await fetch("/api/auth/google", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  credentials: "include",
+                  body: JSON.stringify({ idToken }),
+                });
+
+                if (!response.ok) {
+                  throw new Error("Login failed");
+                }
+
+                navigate("/", { replace: true });
+              } catch (error) {
+                console.log(error);
+              }
+            }}
+          />
+        </div>
+
+        <small>Secure authentication powered by Google</small>
+      </div>
+
+      <div className={styles.grid}></div>
+    </div>
   );
 }
 

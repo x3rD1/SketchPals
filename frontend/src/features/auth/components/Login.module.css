@@ -1,0 +1,75 @@
+.container {
+  position: relative;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  overflow: hidden;
+  background: #fafafa;
+}
+
+/* Infinite canvas grid */
+.grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.35;
+  background-image:
+    linear-gradient(#ececec 1px, transparent 1px),
+    linear-gradient(90deg, #ececec 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.hero {
+  position: relative;
+  z-index: 1;
+  max-width: 480px;
+  text-align: center;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #4f46e5;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  line-height: 1;
+  color: #111827;
+}
+
+.hero p {
+  margin: 1.5rem auto 2.5rem;
+  max-width: 420px;
+  color: #6b7280;
+  font-size: 1.1rem;
+  line-height: 1.7;
+}
+
+.googleButton {
+  display: flex;
+  justify-content: center;
+}
+
+.hero small {
+  display: block;
+  margin-top: 1.25rem;
+  color: #9ca3af;
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 1.5rem;
+  }
+
+  .hero p {
+    font-size: 1rem;
+  }
+}
