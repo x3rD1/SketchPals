@@ -94,7 +94,8 @@ function Toolbar({ engine, tool, save, autosave }: ToolbarProps) {
             <SaveButton save={save} autosave={autosave} />
           </div>
         </div>
-        <div>{canManage && <ShareButton canvasId={engine.id} />}</div>
+
+        {canManage && <ShareButton canvasId={engine.id} />}
       </div>
     </div>
   );
