@@ -12,7 +12,7 @@ function Canvas({ engine, tool }: CanvasProps) {
       <canvas
         className={styles.canvas}
         onContextMenu={(e) => e.preventDefault()}
-        style={{ border: "1px solid red", cursor: tool.cursorStyle }}
+        style={{ cursor: tool.cursorStyle }}
         width={1280}
         height={720}
         ref={engine.canvas2D.canvasRef}

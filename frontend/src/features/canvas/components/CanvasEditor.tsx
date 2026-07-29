@@ -6,6 +6,7 @@ import useCanvasTools from "../hooks/useCanvasTools";
 import useSaveCanvas from "../hooks/save/useSaveCanvas";
 import useAutosaveCanvas from "../hooks/save/useAutosaveCanvas";
 import useCanvasRoom from "../hooks/socket/useCanvasRoom";
+import MobileNotice from "./MobileNotice";
 
 function CanvasEditor() {
   const engine = useCanvasEngine();
@@ -20,10 +21,14 @@ function CanvasEditor() {
   useCanvasRoom(engine);
 
   return (
-    <div className={styles.editor}>
-      <Toolbar engine={engine} tool={tool} save={save} autosave={autosave} />
-      <Canvas engine={engine} tool={tool} />
-    </div>
+    <>
+      <MobileNotice />
+
+      <div className={styles.editor}>
+        <Toolbar engine={engine} tool={tool} save={save} autosave={autosave} />
+        <Canvas engine={engine} tool={tool} />
+      </div>
+    </>
   );
 }
 

@@ -1,3 +1,4 @@
+import { Save } from "lucide-react";
 import type { AutosaveCanvas, SaveCanvas } from "../types/types";
 
 type SaveButtonProps = {
@@ -12,7 +13,7 @@ function SaveButton({ save, autosave }: SaveButtonProps) {
 
   return (
     <button onClick={handleSave} disabled={save.isPending}>
-      Save
+      <Save size={20} />
     </button>
   );
 }
