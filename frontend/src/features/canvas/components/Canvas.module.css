@@ -14,7 +14,6 @@
 }
 
 .canvas {
-  width: min(1280px, 90vw);
   height: auto;
 
   aspect-ratio: 16 / 9;
@@ -35,10 +34,6 @@
 
   touch-action: none;
   user-select: none;
-}
-
-.canvas {
-  width: min(1000px, 75vw);
 }
 
 @media (max-width: 768px) {
