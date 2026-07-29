@@ -1,7 +1,53 @@
 .item {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0.75rem 1rem;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 12px;
+
   list-style: none;
-  border: 2px solid rgb(0, 38, 255);
+
+  background: white;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.item:hover {
+  background: #f9fafb;
+  border-color: #c7d2fe;
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.username {
+  font-weight: 600;
+  color: #111827;
+}
+
+.email {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.item button {
+  padding: 0.4rem 0.8rem;
+
+  border: none;
+  border-radius: 8px;
+
+  background: #eef2ff;
+  color: #4338ca;
+
+  font-weight: 600;
 
   cursor: pointer;
 }

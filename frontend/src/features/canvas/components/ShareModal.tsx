@@ -6,6 +6,7 @@ import useDebounce from "../hooks/search/useDebounce";
 import useCanvasMembers from "../hooks/search/useCanvasMembers";
 import UserItem from "./UserItem";
 import useCanvasPermissions from "../hooks/search/useCanvasPermissions";
+import { X } from "lucide-react";
 
 type ShareModalProps = {
   isOpen: boolean;
@@ -47,7 +48,7 @@ function ShareModal({ isOpen, onClose, canvasId }: ShareModalProps) {
   return createPortal(
     <div className={styles.backdrop}>
       <div className={styles.modal}>
-        <h2>Set up permissions</h2>
+        <h2>Share canvas</h2>
         <div className={styles.search}>
           <input
             type="search"
@@ -57,15 +58,19 @@ function ShareModal({ isOpen, onClose, canvasId }: ShareModalProps) {
           />
         </div>
 
-        <div className={styles.lists}>{searchResults}</div>
+        <div className={styles.lists}>
+          <ul>{searchResults}</ul>
+        </div>
 
-        <div>
-          <h3>Members:</h3>
-          {membersList}
+        <div className={styles.members}>
+          <h3>Members</h3>
+          <ul className={styles.memberList}>{membersList}</ul>
         </div>
 
         <div className={styles.closeBtn}>
-          <button onClick={onClose}>Close</button>
+          <button onClick={onClose}>
+            <X size={20} />
+          </button>
         </div>
       </div>
     </div>,
