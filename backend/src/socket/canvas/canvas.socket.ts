@@ -124,11 +124,9 @@ function registerCanvasHandlers(io: Server, socket: Socket) {
     try {
       if (op.type !== "move") return;
 
-      let room = getRoom(roomState, canvasId);
-
       const opIds = new Set(op.strokes.map((stroke) => stroke.id));
 
-      room = roomState[canvasId].map((roomOp) => {
+      roomState[canvasId] = roomState[canvasId].map((roomOp) => {
         if (roomOp.type !== "move") return roomOp;
 
         const strokes = roomOp.strokes.filter((s) => !opIds.has(s.id));
