@@ -2,6 +2,7 @@ import { GoogleLogin } from "@react-oauth/google";
 import { useNavigate } from "react-router-dom";
 import useAuth from "../hook/useAuth";
 import styles from "./Login.module.css";
+import toast from "react-hot-toast";
 
 function Login() {
   const navigate = useNavigate();
@@ -32,12 +33,14 @@ function Login() {
                 });
 
                 if (!response.ok) {
-                  throw new Error("Login failed");
+                  throw new Error("Login failed, please try again.");
                 }
 
                 navigate("/", { replace: true });
               } catch (error) {
-                console.log(error);
+                if (error instanceof Error) {
+                  toast.error(error.message);
+                }
               }
             }}
           />
