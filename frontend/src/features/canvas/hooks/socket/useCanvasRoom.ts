@@ -9,8 +9,9 @@ import type {
 import { deserializeStrokes } from "../../utils/strokeSerialization";
 import { useQueryClient } from "@tanstack/react-query";
 import appendStateToHistory from "../../utils/appendStateToHistory";
+import createLiveCanvas from "../../utils/createLiveCanvas";
 
-type JoinCanvasAck = {
+export type JoinCanvasAck = {
   success: boolean;
   message: string;
   persisted: SerializedStroke[];
@@ -32,18 +33,7 @@ function useCanvasRoom(engine: CanvasEngine) {
         return;
       }
 
-      const strokes = {
-        persisted: deserializeStrokes(response.persisted),
-        unsaved: deserializeStrokes(response.drawStrokes),
-        erasedIds: response.eraseIds,
-        moved: deserializeStrokes(response.moveStrokes),
-      };
-
-      const liveCanvas = strokes.persisted
-        .concat(strokes.unsaved)
-        .filter((stroke) => !strokes.erasedIds.some((id) => id === stroke.id))
-        .filter((stroke) => !strokes.moved.some((s) => s.id === stroke.id))
-        .concat(strokes.moved);
+      const liveCanvas = createLiveCanvas(response);
 
       // Hydrate local state with live canvas
       setState({ history: [liveCanvas], index: 0 });
